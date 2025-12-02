@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初始化测试数据</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a56db',
+                        secondary: '#e02424',
+                        accent: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/css">
+        .btn-primary {
+            background-color: #1a56db;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: rgba(26, 86, 219, 0.9);
+        }
+        .btn-secondary {
+            background-color: #e02424;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(224, 36, 36, 0.9);
+        }
+        .btn-outline {
+            border: 1px solid #d1d5db;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-outline:hover {
+            background-color: #f3f4f6;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4">
+    <div class="container mx-auto max-w-4xl">
+        <h1 class="text-3xl font-bold text-center mb-8 text-primary">初始化测试数据</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- 初始化测试数据 -->
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fa fa-database text-primary mr-2"></i> 初始化基础测试数据
+                </h2>
+                <p class="text-gray-600 mb-4">点击下方按钮初始化13期基础测试数据</p>
+                <button id="init-base-data" class="btn-primary w-full">
+                    <i class="fa fa-plus-circle mr-2"></i> 初始化基础数据
+                </button>
+            </div>
+            
+            <!-- 生成随机数据 -->
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fa fa-random text-accent mr-2"></i> 生成随机测试数据
+                </h2>
+                <p class="text-gray-600 mb-4">点击下方按钮生成指定数量的随机测试数据</p>
+                <div class="flex gap-2 mb-4">
+                    <input type="number" id="random-count" min="1" max="100" value="10" class="flex-1 border border-gray-300 rounded-lg px-3 py-2">
+                    <button id="generate-random-data" class="btn-accent bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-all duration-300">
+                        <i class="fa fa-magic mr-2"></i> 生成
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 数据状态 -->
+        <div class="card mb-8">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fa fa-info-circle text-primary mr-2"></i> 数据状态
+            </h2>
+            <div id="data-status" class="bg-gray-50 p-4 rounded-lg">
+                <p class="mb-2"><strong>本地存储状态:</strong> <span id="storage-status" class="text-gray-500">未初始化</span></p>
+                <p class="mb-2"><strong>数据条数:</strong> <span id="data-count" class="text-gray-500">-</span></p>
+                <p><strong>最新期号:</strong> <span id="latest-period" class="text-gray-500">-</span></p>
+            </div>
+        </div>
+        
+        <!-- 数据预览 -->
+        <div class="card mb-8">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fa fa-table text-primary mr-2"></i> 数据预览
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">期号</th>
+                            <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">号码</th>
+                            <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">跨度</th>
+                            <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">形态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-preview">
+                        <tr>
+                            <td colspan="4" class="py-4 px-4 text-center text-gray-500">暂无数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="flex flex-wrap gap-4">
+            <button id="clear-all-data" class="btn-secondary flex-1 md:flex-none">
+                <i class="fa fa-trash mr-2"></i> 清除所有数据
+            </button>
+            <button id="generate-prediction" class="btn-primary flex-1 md:flex-none">
+                <i class="fa fa-line-chart mr-2"></i> 生成预测结果
+            </button>
+            <a href="index.html" class="btn-outline flex-1 md:flex-none">
+                <i class="fa fa-home mr-2"></i> 返回首页
+            </a>
+        </div>
+    </div>
+
+    <!-- 测试数据工具 -->
+    <script src="test-data.js"></script>
+    
+    <script>
+        // 页面加载时检查数据状态
+        window.addEventListener('load', checkDataStatus);
+        
+        // 初始化基础测试数据
+        document.getElementById('init-base-data').addEventListener('click', function() {
+            if (confirm('确定要初始化基础测试数据吗？这将覆盖已有的数据！')) {
+                const data = window.testDataUtils.initTestData();
+                updateDataStatus(data);
+                updateDataPreview(data);
+                alert('基础测试数据初始化成功！');
+            }
+        });
+        
+        // 生成随机测试数据
+        document.getElementById('generate-random-data').addEventListener('click', function() {
+            const count = parseInt(document.getElementById('random-count').value);
+            
+            if (isNaN(count) || count < 1 || count > 100) {
+                alert('请输入1-100之间的有效数字');
+                return;
+            }
+            
+            const newData = window.testDataUtils.generateRandomTestData(count);
+            const mergedData = window.testDataUtils.mergeTestData(newData);
+            
+            updateDataStatus(mergedData);
+            updateDataPreview(mergedData);
+            alert(`成功生成${count}条随机测试数据！`);
+        });
+        
+        // 清除所有数据
+        document.getElementById('clear-all-data').addEventListener('click', function() {
+            if (confirm('确定要清除所有测试数据吗？')) {
+                localStorage.removeItem('lotteryData');
+                localStorage.removeItem('latestPrediction');
+                checkDataStatus();
+                alert('所有数据已清除！');
+            }
+        });
+        
+        // 生成预测结果
+        document.getElementById('generate-prediction').addEventListener('click', function() {
+            const lotteryData = localStorage.getItem('lotteryData');
+            
+            if (!lotteryData) {
+                alert('请先初始化测试数据！');
+                return;
+            }
+            
+            // 动态加载预测工具
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = 'utils/predictUtils.js';
+            
+            script.onload = function() {
+                try {
+                    const data = JSON.parse(lotteryData);
+                    
+                    // 分析数据趋势
+                    const trends = predictUtils.analyzeNumberTrends(data);
+                    const spanDistribution = predictUtils.analyzeSpanDistribution(data);
+                    
+                    // 生成预测结果
+                    const prediction = predictUtils.generatePrediction(
+                        data,
+                        trends.hotNumbers,
+                        trends.coldNumbers,
+                        trends.warmNumbers,
+                        spanDistribution.predictedSpans
+                    );
+                    
+                    // 保存预测结果到localStorage
+                    localStorage.setItem('latestPrediction', JSON.stringify(prediction));
+                    
+                    alert('预测结果生成成功！');
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('生成预测结果失败:', error);
+                    alert('生成预测结果失败: ' + error.message);
+                }
+            };
+            
+            script.onerror = function() {
+                alert('加载预测工具失败！');
+            };
+            
+            document.head.appendChild(script);
+        });
+        
+        // 检查数据状态
+        function checkDataStatus() {
+            const lotteryData = localStorage.getItem('lotteryData');
+            
+            if (lotteryData) {
+                const data = JSON.parse(lotteryData);
+                updateDataStatus(data);
+                updateDataPreview(data);
+            } else {
+                document.getElementById('storage-status').textContent = '未初始化';
+                document.getElementById('storage-status').className = 'text-gray-500';
+                document.getElementById('data-count').textContent = '-';
+                document.getElementById('latest-period').textContent = '-';
+                
+                // 清空数据预览
+                const previewBody = document.getElementById('data-preview');
+                previewBody.innerHTML = '<tr><td colspan="4" class="py-4 px-4 text-center text-gray-500">暂无数据</td></tr>';
+            }
+        }
+        
+        // 更新数据状态
+        function updateDataStatus(data) {
+            document.getElementById('storage-status').textContent = '已初始化';
+            document.getElementById('storage-status').className = 'text-green-500';
+            document.getElementById('data-count').textContent = data.length;
+            
+            if (data.length > 0) {
+                document.getElementById('latest-period').textContent = data[data.length - 1].period;
+            } else {
+                document.getElementById('latest-period').textContent = '-';
+            }
+        }
+        
+        // 更新数据预览
+        function updateDataPreview(data) {
+            const previewBody = document.getElementById('data-preview');
+            previewBody.innerHTML = '';
+            
+            // 显示最近的10条数据
+            const recentData = data.slice(-10);
+            
+            recentData.forEach(item => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td class="py-2 px-4 border-b border-gray-200">${item.period}</td>
+                    <td class="py-2 px-4 border-b border-gray-200">
+                        <span class="inline-block w-6 h-6 rounded-full bg-primary text-white text-center text-xs leading-6 mr-1">${item.numbers[0]}</span>
+                        <span class="inline-block w-6 h-6 rounded-full bg-primary text-white text-center text-xs leading-6 mr-1">${item.numbers[1]}</span>
+                        <span class="inline-block w-6 h-6 rounded-full bg-primary text-white text-center text-xs leading-6">${item.numbers[2]}</span>
+                    </td>
+                    <td class="py-2 px-4 border-b border-gray-200">${item.span}</td>
+                    <td class="py-2 px-4 border-b border-gray-200">
+                        <span class="px-2 py-1 text-xs rounded-full ${item.pattern === '组三' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                            ${item.pattern}
+                        </span>
+                    </td>
+                `;
+                
+                previewBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>

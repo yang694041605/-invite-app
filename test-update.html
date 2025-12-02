@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试主页更新功能</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">测试主页主页更新功能</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">当前localStorage状态</h2>
+            <div id="localstorage-status" class="mb-4 p-4 bg-gray-100 rounded">
+                <p><strong>latestPrediction:</strong> <span id="latest-prediction-status">未设置</span></p>
+                <p><strong>predictionHistory:</strong> <span id="prediction-history-status">未设置</span></p>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-2">当前存储的预测结果</h3>
+                <pre id="current-prediction-data" class="bg-gray-100 p-4 rounded overflow-x-auto text-sm">无数据</pre>
+            </div>
+            
+            <div class="flex flex-wrap gap-4">
+                <button id="set-test-data" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    设置测试预测数据
+                </button>
+                <button id="clear-data" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    清除localStorage数据
+                </button>
+                <a href="index.html" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    访问主页查看结果
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">测试步骤</h2>
+            <ol class="list-decimal list-inside space-y-2">
+                <li>点击"设置测试预测数据"按钮，将测试数据写入localStorage</li>
+                <li>点击"访问主页查看结果"按钮，查看主页页是否显示最新的预测结果</li>
+                <li>点击"清除除localStorage数据"按钮，可以可以清除所有数据</li>
+            </ol>
+            
+            <div class="mt-6 p-4 bg-yellow-50 rounded-lg">
+                <h3 class="font-semibold text-yellow-800 mb-2">
+                    <i class="fa fa-info-circle mr-1"></i> 注意事项
+                </h3>
+                <ul class="list-disc list-inside space-y-1 text-yellow-700">
+                    <li>主页应该在加载时自动从localStorage获取并显示最新的预测结果</li>
+                    <li>如果localStorage中没有数据，主页将显示默认的静态数据</li>
+                    <li>新的预测结果会覆盖旧的预测结果</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示当前localStorage状态
+        function displayLocalStorageStatus() {
+            const latestPrediction = localStorage.getItem('latestPrediction');
+            const predictionHistory = localStorage.getItem('predictionHistory');
+            
+            document.getElementById('latest-prediction-status').textContent = latestPrediction ? '已设置' : '未设置';
+            document.getElementById('prediction-history-status').textContent = predictionHistory ? '已设置' : '未设置';
+            
+            if (latestPrediction) {
+                const prediction = JSON.parse(latestPrediction);
+                document.getElementById('current-prediction-data').textContent = JSON.stringify(prediction, null, 2);
+            } else {
+                document.getElementById('current-prediction-data').textContent = '无数据';
+            }
+        }
+        
+        // 设置测试预测数据
+        function setTestPredictionData() {
+            // 生成测试数据
+            const testData = {
+                period: '第2025200期',
+                d胆码: [
+                    { number: '3', type: 'hot' },
+                    { number: '5', type: 'warm' },
+                    { number: '7', type: 'cold' }
+                ],
+                fiveNumbers: ['3', '5', '7', '2', '8'],
+                sevenNumbers: ['3', '5', '7', '2', '8', '0', '9'],
+                spans: [5, 6, 7, 8],
+                pattern: '组六',
+                groupSelections: ['357', '352', '358', '372', '378', '572', '578', '280'],
+                directSelections: ['357', '375', '537', '573', '735', '753', '325', '352'],
+                d胆码Confidence: 85,
+                patternConfidence: 90,
+                timestamp: new Date().getTime()
+            };
+            
+            // 保存到localStorage
+            localStorage.setItem('latestPrediction', JSON.stringify(testData));
+            
+            // 更新示成功消息
+            alert('测试预测数据已设置！');
+            
+            // 更新状态显示
+            displayLocalStorageStatus();
+        }
+        
+        // 清除localStorage数据
+        function clearLocalStorageData() {
+            localStorage.removeItem('latestPrediction');
+            localStorage.removeItem('predictionHistory');
+            
+            // 显示成功消息
+            alert('localStorage数据已清除！');
+            
+            // 更新状态显示
+            displayLocalStorageStatus();
+        }
+        
+        // 页面加载时显示状态
+        window.addEventListener('load', displayLocalStorageStatus);
+        
+        // 绑定按钮事件
+        document.getElementById('set-test-data').addEventListener('click', setTestPredictionData);
+        document.getElementById('clear-data').addEventListener('click', clearLocalStorageData);
+    </script>
+</body>
+</html>

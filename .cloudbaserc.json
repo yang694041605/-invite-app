@@ -1,0 +1,62 @@
+{
+  "version": "2.0",
+  "envId": "my-app-fucai-4gcaw7hv5d0274cb",
+  "functionRoot": "cloud-functions",
+  "functions": {
+    "verifyAuthCode": {
+      "timeout": 5,
+      "runtime": "Nodejs14.18",
+      "memorySize": 128,
+      "handler": "index.main"
+    },
+    "generateAuthCode": {
+      "timeout": 5,
+      "runtime": "Nodejs14.18",
+      "memorySize": 128,
+      "handler": "index.main"
+    },
+    "checkAuthStatus": {
+      "timeout": 5,
+      "runtime": "Nodejs14.18",
+      "memorySize": 128,
+      "handler": "index.main"
+    }
+  },
+  "hosting": {
+    "envId": "my-app-fucai-4gcaw7hv5d0274cb",
+    "sourceDir": ".",
+    "autoDeploy": false,
+    "ignore": [
+      "node_modules",
+      ".git",
+      ".vscode",
+      "*.log",
+      "*.md",
+      "*.bat",
+      "*.py",
+      "test-*.html",
+      "test-*.js",
+      "test-data"
+    ],
+    "headers": {
+      "*.html": {
+        "Cache-Control": "no-cache"
+      },
+      "*.js": {
+        "Cache-Control": "max-age=86400"
+      },
+      "*.css": {
+        "Cache-Control": "max-age=86400"
+      },
+      "*.png": {
+        "Cache-Control": "max-age=86400"
+      },
+      "*.jpg": {
+        "Cache-Control": "max-age=86400"
+      },
+      "*.gif": {
+        "Cache-Control": "max-age=86400"
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "version": "2.0",
+  "envId": "my-app-fucai-4gcaw7hv5d0274cb",
+  "staticWebsite": {
+    "envId": "my-app-fucai-4gcaw7hv5d0274cb",
+    "indexDocument": "index.html",
+    "errorDocument": "404.html",
+    "rewrites": [],
+    "headers": [],
+    "cacheControl": {
+      "maxAgeSeconds": 0,
+      "swrSeconds": 0
+    }
+  },
+  "functions": [],
+  "databases": [],
+  "storage": [],
+  "hosting": {
+    "envId": "my-app-fucai-4gcaw7hv5d0274cb",
+    "sourceDir": ".",
+    "ignore": [
+      "node_modules",
+      ".git",
+      ".gitignore",
+      "cloudbaserc.json"
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>福彩3D智能预测系统 - 预览</title>
+    <script>
+        // 使用Fetch API加载index.html的内容
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('index.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应错误');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    // 将加载的HTML内容插入到当前页面
+                    document.getElementById('content-container').innerHTML = html;
+                    
+                    // 重新执行页面中的脚本
+                    const scripts = document.getElementById('content-container').querySelectorAll('script');
+                    scripts.forEach(oldScript => {
+                        const newScript = document.createElement('script');
+                        Array.from(oldScript.attributes).forEach(attr => {
+                            newScript.setAttribute(attr.name, attr.value);
+                        });
+                        newScript.textContent = oldScript.textContent;
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                })
+                .catch(error => {
+                    console.error('加载页面时出错:', error);
+                    document.getElementById('content-container').innerHTML = 
+                        '<div style="text-align: center; padding: 50px;">' +
+                        '<h1>加载失败</h1>' +
+                        '<p>无法加载页面内容，请检查文件是否存在。</p>' +
+                        '<p>错误信息: ' + error.message + '</p>' +
+                        '</div>';
+                });
+        });
+    </script>
+</head>
+<body>
+    <div id="content-container">
+        <div style="text-align: center; padding: 50px;">
+            <h1>正在加载页面...</h1>
+            <p>请稍候，正在准备预览内容。</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预测数据测试工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        pre {
+            background-color: #f3f4f6;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .success {
+            color: #10b981;
+        }
+        .info {
+            color: #3b82f6;
+        }
+        .warning {
+            color: #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <h1>智能预测数据测试工具</h1>
+    
+    <div class="card">
+        <h2>生成测试数据</h2>
+        <p>点击下方按钮，生成模拟的第n+1期预测数据并保存到localStorage</p>
+        <button id="generateData">生成并保存测试数据</button>
+        <p id="statusMessage" class="info"></p>
+    </div>
+    
+    <div class="card">
+        <h2>当前localStorage中的预测数据</h2>
+        <pre id="dataDisplay">尚未生成数据</pre>
+    </div>
+    
+    <div class="card">
+        <h2>测试步骤</h2>
+        <ol>
+            <li>点击"生成并保存测试数据"按钮</li>
+            <li>打开index.html页面，检查是否能正确显示预测数据</li>
+            <li>如果测试成功，首页将显示模拟的第n+1期开奖数据</li>
+        </ol>
+    </div>
+    
+    <script>
+        // 生成测试数据并保存到localStorage
+        document.getElementById('generateData').addEventListener('click', function() {
+            // 生成模拟的预测数据
+            const mockPredictionData = {
+                period: '2025124',  // 第n+1期
+                time: new Date().toLocaleString('zh-CN'),
+                D胆码: ['4', '6', '8'],  // 胆码
+                fiveNumbers: ['4', '6', '8', '1', '3'],  // 五码
+                sevenNumbers: ['4', '6', '8', '1', '3', '5', '9'],  // 七码
+                spans: ['5', '6', '7', '9'],  // 跨度
+                pattern: '组六',  // 形态
+                groupSelections: ['468', '461', '463', '481', '483', '681'],  // 组选推荐
+                directSelections: ['468', '486', '648', '684', '846', '864']  // 直选推荐
+            };
+            
+            // 保存到localStorage
+            localStorage.setItem('latestPrediction', JSON.stringify(mockPredictionData));
+            localStorage.setItem('lastPrediction', JSON.stringify(mockPredictionData));
+            
+            // 更新状态消息
+            document.getElementById('statusMessage').textContent = '测试数据已成功保存到localStorage！';
+            document.getElementById('statusMessage').className = 'success';
+            
+            // 显示保存的数据
+            document.getElementById('dataDisplay').textContent = JSON.stringify(mockPredictionData, null, 2);
+            
+            console.log('测试数据已保存到localStorage:', mockPredictionData);
+        });
+        
+        // 页面加载时检查localStorage中的数据
+        window.addEventListener('load', function() {
+            const storedData = localStorage.getItem('latestPrediction');
+            if (storedData) {
+                try {
+                    const parsedData = JSON.parse(storedData);
+                    document.getElementById('dataDisplay').textContent = JSON.stringify(parsedData, null, 2);
+                    document.getElementById('statusMessage').textContent = '发现已存在的预测数据';
+                    document.getElementById('statusMessage').className = 'warning';
+                } catch (e) {
+                    document.getElementById('dataDisplay').textContent = 'localStorage中的数据格式错误';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

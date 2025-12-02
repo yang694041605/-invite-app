@@ -1,0 +1,50 @@
+{
+  "id": "com.fucai3d.intelligent",
+  "name": "福彩3D智能推理系统",
+  "short_name": "福彩3D",
+  "description": "专业的福彩3D智能推理系统，基于历史数据分析，为用户提供精准的号码预测服务，共同探究未知数字魅力",
+  "start_url": "/login.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/512/000000/lottery.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "立即登录",
+      "short_name": "登录",
+      "description": "快速进入登录页面",
+      "url": "/login.html",
+      "icons": [{ "src": "https://img.icons8.com/color/96/000000/login.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "智能预测",
+      "short_name": "预测",
+      "description": "进入智能预测页面",
+      "url": "/index.html",
+      "icons": [{ "src": "https://img.icons8.com/color/96/000000/prediction.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "共振分析",
+      "short_name": "共振",
+      "description": "进入共振分析页面",
+      "url": "/resonance-analysis/index.html",
+      "icons": [{ "src": "https://img.icons8.com/color/96/000000/analysis.png", "sizes": "96x96" }]
+    }
+  ],
+  "categories": ["productivity", "finance", "education", "utilities", "lifestyle"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "scope": "/",
+  "screenshots": [],
+  "iarc_rating_id": "",
+  "content_security_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://imgcache.qq.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' https://img.icons8.com data:; connect-src 'self' https://api.tencentcloudapi.com; font-src 'self' https://cdn.jsdelivr.net"
+}

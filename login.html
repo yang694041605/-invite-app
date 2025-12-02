@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>福彩3D智能推理系统 - 授权登录</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .logo p {
+            color: #666;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        .input-group {
+            margin-bottom: 25px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+        .auth-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .auth-input::placeholder {
+            color: #ccc;
+            letter-spacing: normal;
+            text-transform: none;
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .auth-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        .auth-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .info { 
+            background: #cce7ff; 
+            color: #004085; 
+            border: 1px solid #99d3ff;
+            display: block;
+        }
+        .status-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border: 1px solid #e9ecef;
+        }
+        .status-info h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #495057;
+            font-size: 18px;
+        }
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .status-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .status-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .status-value {
+            color: #495057;
+            font-weight: 600;
+        }
+        .countdown {
+            color: #dc3545;
+            font-weight: 700;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 13px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+        .visible {
+            display: block;
+        }
+        
+        /* 欢迎动画界面样式 */
+        .welcome-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a56db 0%, #1e40af 25%, #7c3aed 50%, #db2777 75%, #f43f5e 100%);
+            background-size: 400% 400%;
+            animation: gradientAnimation 8s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 1s ease-out;
+        }
+        
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .welcome-content {
+            text-align: center;
+            color: white;
+            opacity: 0;
+            animation: fadeIn 2s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .welcome-title {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            animation: titleAnimation 3s ease forwards;
+            animation-delay: 0.5s;
+        }
+        
+        @keyframes titleAnimation {
+            from { opacity: 0; transform: scale(0.8) translateY(50px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .welcome-subtitle {
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            animation: subtitleAnimation 3s ease forwards;
+            animation-delay: 1s;
+        }
+        
+        @keyframes subtitleAnimation {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .welcome-loader {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+            margin: 0 auto;
+            animation: loaderAnimation 2s ease forwards;
+            animation-delay: 1.5s;
+        }
+        
+        @keyframes loaderAnimation {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 动画欢迎界面 -->
+    <div id="welcome-animation" class="welcome-animation">
+        <div class="welcome-content">
+            <h1 class="welcome-title">欢迎走进福彩3D世界</h1>
+            <p class="welcome-subtitle">共同探究未知数字魅力</p>
+            <div class="welcome-loader"></div>
+        </div>
+    </div>
+    
+    <div class="auth-container" style="display: none;">
+        <div class="logo">
+            <h1>🎲 福彩3D智能推理系统</h1>
+            <p>安全授权验证</p>
+        </div>
+        
+        <!-- 授权表单 -->
+        <div id="auth-form">
+            <div class="input-group">
+                <label for="customerName">客户姓名</label>
+                <input 
+                    type="text" 
+                    id="customerName" 
+                    class="auth-input" 
+                    placeholder="请输入您的姓名"
+                    autocomplete="name"
+                >
+            </div>
+            <div class="input-group">
+                <label for="customerPhone">联系电话</label>
+                <input 
+                    type="tel" 
+                    id="customerPhone" 
+                    class="auth-input" 
+                    placeholder="请输入您的手机号码"
+                    autocomplete="tel"
+                    maxlength="11"
+                >
+            </div>
+            <div class="input-group">
+                <label for="authCode">请输入6位授权码</label>
+                <input 
+                    type="text" 
+                    id="authCode" 
+                    class="auth-input" 
+                    placeholder="例如: ABC123"
+                    maxlength="6"
+                    autocomplete="off"
+                >
+            </div>
+            <button id="authBtn" class="auth-btn">
+                <span id="btnText">授权登录</span>
+            </button>
+            
+            
+            
+            <div id="authMessage" class="message"></div>
+        </div>
+        
+        <!-- 授权状态显示 -->
+        <div id="auth-status" class="hidden">
+            <div class="status-info">
+                <h3>✅ 授权信息</h3>
+                <div class="status-row">
+                    <span class="status-label">用户ID:</span>
+                    <span class="status-value" id="userId"></span>
+                </div>
+                <div class="status-row">
+                    <span class="status-label">有效期至:</span>
+                    <span class="status-value" id="expireTime"></span>
+                </div>
+                <div class="status-row">
+                    <span class="status-label">剩余时间:</span>
+                    <span class="status-value">
+                        <span id="remainDays"></span>天 
+                        <span id="remainHours"></span>小时
+                    </span>
+                </div>
+                <div class="status-row">
+                    <span class="status-label">授权天数:</span>
+                    <span class="status-value" id="expireDays"></span>
+                </div>
+                <div class="status-row">
+                    <span class="status-label">使用次数:</span>
+                    <span class="status-value">
+                        <span id="usageCount"></span>/<span id="maxUsageLimit"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <button id="enterApp" class="auth-btn">🎯 进入福彩3D智能推理系统</button>
+            <button id="logoutBtn" class="auth-btn" style="background: linear-gradient(135deg, #dc3545, #c82333); margin-top: 10px;">🚪 退出登录</button>
+        </div>
+        
+        <div class="footer">
+            <p>🔐 需要授权码？请联系系统管理员</p>
+            <p style="margin-top: 5px; font-size: 12px; opacity: 0.7;">
+                系统版本: v2.0 | 安全授权系统
+            </p>
+        </div>
+    </div>
+
+    <!-- PWA支持 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="福彩3D">
+    
+    <!-- 腾讯云开发SDK -->
+    <script src="https://imgcache.qq.com/qcloud/tcbjs/1.10.0/tcb.js"></script>
+    
+    <!-- Service Worker注册 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+    
+    <script>
+        // ===========================================
+        // 配置区域 - 请根据实际情况修改
+        // ===========================================
+        const CONFIG = {
+            ENV_ID: 'my-app-fucai-4gcaw7hv5d0274cb', // 腾讯云环境ID
+            DEFAULT_PAGE: 'index.html',
+            DEBUG_MODE: false // 调试模式：true表示使用模拟数据，false表示调用真实云函数
+        };
+
+        // ===========================================
+        // 全局变量
+        // ===========================================
+        let app = null;
+        let currentAuthData = null;
+
+        // ===========================================
+        // DOM 元素
+        // ===========================================
+        const elements = {
+            customerNameInput: document.getElementById('customerName'),
+            customerPhoneInput: document.getElementById('customerPhone'),
+            authCodeInput: document.getElementById('authCode'),
+            authBtn: document.getElementById('authBtn'),
+            btnText: document.getElementById('btnText'),
+            authMessage: document.getElementById('authMessage'),
+            authForm: document.getElementById('auth-form'),
+            authStatus: document.getElementById('auth-status'),
+            userId: document.getElementById('userId'),
+            expireTime: document.getElementById('expireTime'),
+            remainDays: document.getElementById('remainDays'),
+            remainHours: document.getElementById('remainHours'),
+            expireDays: document.getElementById('expireDays'),
+            usageCount: document.getElementById('usageCount'),
+            maxUsageLimit: document.getElementById('maxUsageLimit'),
+            enterApp: document.getElementById('enterApp'),
+            logoutBtn: document.getElementById('logoutBtn')
+        };
+
+        // ===========================================
+        // 初始化应用
+        // ===========================================
+        async function initApp() {
+            try {
+                // 初始化腾讯云开发
+                app = tcb.init({
+                    env: CONFIG.ENV_ID
+                });
+                
+                console.log('✅ 腾讯云开发初始化成功');
+                
+                // 绑定事件监听器
+                bindEvents();
+                
+                // 检查本地登录状态
+                await checkLoginStatus();
+                
+            } catch (error) {
+                console.error('❌ 初始化失败:', error);
+                showMessage('系统初始化失败，请刷新页面重试', 'error');
+            }
+        }
+
+        // ===========================================
+        // 绑定事件监听器
+        // ===========================================
+        function bindEvents() {
+            // 授权按钮点击事件
+            elements.authBtn.addEventListener('click', verifyAuth);
+            
+            // 回车键提交
+            elements.authCodeInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyAuth();
+                }
+            });
+            
+            // 输入格式化（自动转为大写，只允许字母数字）
+            elements.authCodeInput.addEventListener('input', function(e) {
+                let value = e.target.value.toUpperCase();
+                value = value.replace(/[^A-Z0-9]/g, '');
+                if (value.length > 6) {
+                    value = value.substring(0, 6);
+                }
+                e.target.value = value;
+            });
+            
+            // 进入应用按钮
+            elements.enterApp.addEventListener('click', enterApp);
+            
+            // 退出登录按钮
+            elements.logoutBtn.addEventListener('click', logout);
+        }
+
+        // ===========================================
+        // 验证授权码
+        // ===========================================
+        async function verifyAuth() {
+            const customerName = elements.customerNameInput.value.trim();
+            const customerPhone = elements.customerPhoneInput.value.trim();
+            const authCode = elements.authCodeInput.value.trim();
+            
+            // 输入验证
+            if (!customerName) {
+                showMessage('请输入客户姓名', 'error');
+                elements.customerNameInput.focus();
+                return;
+            }
+            
+            if (!customerPhone) {
+                showMessage('请输入联系电话', 'error');
+                elements.customerPhoneInput.focus();
+                return;
+            }
+            
+            if (!/^1[3-9]\d{9}$/.test(customerPhone)) {
+                showMessage('请输入有效的手机号码', 'error');
+                elements.customerPhoneInput.focus();
+                return;
+            }
+            
+            if (!authCode) {
+                showMessage('请输入授权码', 'error');
+                elements.authCodeInput.focus();
+                return;
+            }
+            
+            if (authCode.length !== 6) {
+                showMessage('授权码必须是6位字符', 'error');
+                elements.authCodeInput.focus();
+                return;
+            }
+            
+            // 更新按钮状态
+            setButtonLoading(true);
+            hideMessage();
+            
+            try {
+                // 获取设备信息
+                const deviceInfo = {
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    screen: `${screen.width}×${screen.height}`,
+                    language: navigator.language,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    timestamp: new Date().toISOString(),
+                    referrer: document.referrer
+                };
+                
+                console.log('🔍 正在验证授权码:', authCode);
+                
+                let result;
+                let isLocalVerification = false;
+                
+                // 调试模式：使用模拟数据
+                if (CONFIG.DEBUG_MODE) {
+                    console.log('🔧 调试模式：使用模拟数据');
+                    // 模拟云函数返回结果
+                    result = {
+                        result: {
+                            success: true,
+                            userId: `user_${Date.now()}`,
+                            expireTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                            remainDays: 30,
+                            totalRemainMinutes: 30 * 24 * 60,
+                            expireDays: 30,
+                            usageCount: 1,
+                            maxUsageLimit: 1
+                        }
+                    };
+                } else {
+                    try {
+                        // 调用真实云函数
+                        result = await app.callFunction({
+                            name: 'verifyAuthCode',
+                            data: {
+                                authCode: authCode,
+                                customerName: customerName,
+                                customerPhone: customerPhone,
+                                deviceInfo: deviceInfo,
+                                userInfo: {
+                                        loginPage: 'login.html',
+                                        appVersion: '2.0',
+                                        customerName: customerName,
+                                        customerPhone: customerPhone
+                                    }
+                            }
+                        });
+                    } catch (cloudError) {
+                        console.error('💥 云函数调用失败，尝试本地验证:', cloudError);
+                        // 云函数调用失败，尝试本地验证
+                        isLocalVerification = true;
+                        result = await localVerifyAuthCode(authCode, customerName, customerPhone);
+                    }
+                }
+                
+                console.log('📋 验证结果:', result);
+                
+                // 严格验证：只有在云函数调用成功或本地验证找到匹配客户时才允许登录
+                if (result.result.success) {
+                    // 授权成功
+                    console.log('✅ 授权验证成功');
+                    currentAuthData = result.result;
+                    
+                    // 保存到本地存储
+                    localStorage.setItem('userId', result.result.userId);
+                    localStorage.setItem('authData', JSON.stringify(result.result));
+                    
+                    showMessage('授权成功！正在跳转...', 'success');
+                    
+                    // 显示授权状态
+                    setTimeout(() => {
+                        showAuthStatus(result.result);
+                    }, 1000);
+                    
+                } else {
+                    // 授权失败
+                    console.log('❌ 授权验证失败:', result.result.message);
+                    showMessage(result.result.message || '授权码无效或已过期', 'error');
+                    setButtonLoading(false);
+                }
+                
+            } catch (error) {
+                console.error('💥 授权验证异常:', error);
+                // 网络错误时，强制尝试本地验证
+                console.log('🔄 网络错误，强制尝试本地验证');
+                try {
+                    const localResult = await localVerifyAuthCode(authCode, customerName, customerPhone);
+                    if (localResult.result.success) {
+                        // 本地验证成功
+                        console.log('✅ 本地验证成功');
+                        currentAuthData = localResult.result;
+                        
+                        // 保存到本地存储
+                        localStorage.setItem('userId', localResult.result.userId);
+                        localStorage.setItem('authData', JSON.stringify(localResult.result));
+                        
+                        showMessage('授权成功！正在跳转...', 'success');
+                        
+                        // 显示授权状态
+                        setTimeout(() => {
+                            showAuthStatus(localResult.result);
+                        }, 1000);
+                    } else {
+                        // 本地验证也失败
+                        showMessage('授权码无效或已过期', 'error');
+                        setButtonLoading(false);
+                    }
+                } catch (localError) {
+                    // 本地验证也出错
+                    console.error('💥 本地验证异常:', localError);
+                    showMessage('授权码无效或已过期', 'error');
+                    setButtonLoading(false);
+                }
+            }
+        }
+        
+        // 本地验证授权码
+        async function localVerifyAuthCode(authCode, customerName, customerPhone) {
+            console.log('🔍 正在本地验证授权码:', authCode);
+            
+            // 从本地存储获取待验证客户和授权客户
+            const pendingClients = JSON.parse(localStorage.getItem('pendingClients') || '[]');
+            const authorizedClients = JSON.parse(localStorage.getItem('authorizedClients') || '[]');
+            
+            // 检查待验证客户
+            const pendingClient = pendingClients.find(client => 
+                client.verifyCode === authCode && 
+                client.name === customerName && 
+                client.phone === customerPhone
+            );
+            
+            if (pendingClient) {
+                console.log('✅ 本地验证成功：找到待验证客户');
+                
+                // 计算剩余时间
+                const now = new Date();
+                const expireDate = new Date(pendingClient.expireTime);
+                const diffTime = expireDate - now;
+                const remainDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const totalRemainMinutes = Math.ceil(diffTime / (1000 * 60));
+                
+                if (remainDays <= 0) {
+                    return {
+                        result: {
+                            success: false,
+                            message: '授权码已过期'
+                        }
+                    };
+                }
+                
+                // 将客户从待验证列表移动到授权列表
+                const updatedPendingClients = pendingClients.filter(client => client.id !== pendingClient.id);
+                localStorage.setItem('pendingClients', JSON.stringify(updatedPendingClients));
+                
+                // 更新客户状态为授权
+                const authorizedClient = {
+                    ...pendingClient,
+                    id: `user_${Date.now()}`,
+                    status: 'active',
+                    activationTime: now.toISOString(),
+                    usageCount: 1,
+                    maxUsageLimit: 1
+                };
+                authorizedClients.push(authorizedClient);
+                localStorage.setItem('authorizedClients', JSON.stringify(authorizedClients));
+                
+                return {
+                    result: {
+                        success: true,
+                        userId: authorizedClient.id,
+                        expireTime: authorizedClient.expireTime,
+                        remainDays: remainDays,
+                        totalRemainMinutes: totalRemainMinutes,
+                        expireDays: pendingClient.expireDays,
+                        usageCount: 1,
+                        maxUsageLimit: 1
+                    }
+                };
+            }
+            
+            // 检查授权客户
+            const authorizedClient = authorizedClients.find(client => 
+                client.verifyCode === authCode && 
+                client.name === customerName && 
+                client.phone === customerPhone
+            );
+            
+            if (authorizedClient) {
+                console.log('✅ 本地验证成功：找到授权客户');
+                
+                // 计算剩余时间
+                const now = new Date();
+                const expireDate = new Date(authorizedClient.expireTime);
+                const diffTime = expireDate - now;
+                const remainDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const totalRemainMinutes = Math.ceil(diffTime / (1000 * 60));
+                
+                if (remainDays <= 0) {
+                    return {
+                        result: {
+                            success: false,
+                            message: '授权已过期'
+                        }
+                    };
+                }
+                
+                // 更新使用次数
+                authorizedClient.usageCount = (authorizedClient.usageCount || 0) + 1;
+                localStorage.setItem('authorizedClients', JSON.stringify(authorizedClients));
+                
+                return {
+                    result: {
+                        success: true,
+                        userId: authorizedClient.id,
+                        expireTime: authorizedClient.expireTime,
+                        remainDays: remainDays,
+                        totalRemainMinutes: totalRemainMinutes,
+                        expireDays: authorizedClient.expireDays,
+                        usageCount: authorizedClient.usageCount,
+                        maxUsageLimit: authorizedClient.maxUsageLimit || 1
+                    }
+                };
+            }
+            
+            // 未找到匹配的客户
+            console.log('❌ 本地验证失败：未找到匹配的客户');
+            return {
+                result: {
+                    success: false,
+                    message: '授权码无效或已过期'
+                }
+            };
+        }
+
+        // ===========================================
+        // 检查登录状态 - 每次登录都需要重新验证
+        // ===========================================
+        async function checkLoginStatus() {
+            // 清除本地存储的登录信息，确保每次登录都需要重新验证
+            clearAuthData();
+            console.log('🔄 清除本地登录信息，需要重新验证');
+        }
+
+        // ===========================================
+        // 显示授权状态
+        // ===========================================
+        function showAuthStatus(authInfo) {
+            // 隐藏登录表单，显示状态页面
+            elements.authForm.classList.add('hidden');
+            elements.authStatus.classList.remove('hidden');
+            
+            // 填充授权信息
+            elements.userId.textContent = authInfo.userId || '未知';
+            elements.expireTime.textContent = formatDateTime(authInfo.expireTime);
+            elements.remainDays.textContent = authInfo.remainDays || 0;
+            elements.remainHours.textContent = Math.floor((authInfo.totalRemainMinutes || 0) / 60) % 24;
+            elements.expireDays.textContent = authInfo.expireDays || 0;
+            elements.usageCount.textContent = authInfo.usageCount || 1;
+            elements.maxUsageLimit.textContent = authInfo.maxUsageLimit || 1;
+            
+            // 如果即将到期，显示警告颜色
+            if ((authInfo.remainDays || 0) <= 3) {
+                elements.remainDays.parentElement.querySelector('.status-value').style.color = '#dc3545';
+                elements.remainDays.parentElement.querySelector('.status-value').style.fontWeight = 'bold';
+            }
+        }
+
+        // ===========================================
+        // 进入主应用
+        // ===========================================
+        function enterApp() {
+            console.log('🚀 进入主应用');
+            // 跳转到主页面
+            window.location.href = CONFIG.DEFAULT_PAGE;
+        }
+
+        // ===========================================
+        // 退出登录
+        // ===========================================
+        function logout() {
+            console.log('👋 用户退出登录');
+            if (confirm('确定要退出登录吗？')) {
+                clearAuthData();
+                location.reload();
+            }
+        }
+
+        // ===========================================
+        // 清除授权数据
+        // ===========================================
+        function clearAuthData() {
+            localStorage.removeItem('userId');
+            localStorage.removeItem('authData');
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminLoginTime');
+            currentAuthData = null;
+            
+            // 重置UI
+            elements.authForm.classList.remove('hidden');
+            elements.authStatus.classList.add('hidden');
+            elements.customerNameInput.value = '';
+            elements.customerPhoneInput.value = '';
+            elements.authCodeInput.value = '';
+            setButtonLoading(false);
+            hideMessage();
+            
+            console.log('🧹 授权数据已清除');
+        }
+        
+        // ===========================================
+        // 处理添加到桌面事件
+        // ===========================================
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // 阻止Chrome 67及更早版本自动显示安装提示
+            e.preventDefault();
+            // 存储事件，以便稍后触发
+            deferredPrompt = e;
+            console.log('✅ 可以添加到桌面了');
+            
+            // 可以在这里显示自定义的"添加到桌面"按钮
+            // 例如：document.getElementById('add-to-home-screen').style.display = 'block';
+        });
+        
+        // 手动触发添加到桌面
+        function addToHomeScreen() {
+            if (deferredPrompt) {
+                // 显示安装提示
+                deferredPrompt.prompt();
+                
+                // 等待用户响应
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('✅ 用户已添加到桌面');
+                    } else {
+                        console.log('❌ 用户拒绝添加到桌面');
+                    }
+                    // 清除保存的事件，因为它只能使用一次
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        // ===========================================
+        // 工具函数
+        // ===========================================
+
+        // 设置按钮加载状态
+        function setButtonLoading(loading) {
+            if (loading) {
+                elements.btnText.innerHTML = '<span class="loading"></span>验证中...';
+                elements.authBtn.disabled = true;
+            } else {
+                elements.btnText.textContent = '授权登录';
+                elements.authBtn.disabled = false;
+            }
+        }
+
+        // 显示消息
+        function showMessage(text, type = 'info') {
+            elements.authMessage.textContent = text;
+            elements.authMessage.className = `message ${type}`;
+            elements.authMessage.style.display = 'block';
+        }
+
+        // 隐藏消息
+        function hideMessage() {
+            elements.authMessage.style.display = 'none';
+        }
+
+        // 格式化日期时间
+        function formatDateTime(timestamp) {
+            if (!timestamp) return '未知';
+            const date = new Date(timestamp);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // ===========================================
+        // 动画欢迎界面处理
+        // ===========================================
+        function handleWelcomeAnimation() {
+            // 5秒后隐藏动画界面，显示登录界面
+            setTimeout(function() {
+                const welcomeAnimation = document.getElementById('welcome-animation');
+                const authContainer = document.querySelector('.auth-container');
+                
+                // 添加淡出动画
+                welcomeAnimation.style.opacity = '0';
+                
+                // 等待动画结束后隐藏
+                setTimeout(function() {
+                    welcomeAnimation.style.display = 'none';
+                    authContainer.style.display = 'block';
+                }, 1000);
+            }, 5000);
+        }
+        
+        // ===========================================
+        // 启动应用
+        // ===========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            handleWelcomeAnimation();
+            initApp();
+        });
+        
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', function() {
+            console.log('👋 页面即将卸载');
+        });
+    </script>
+</body>
+</html>

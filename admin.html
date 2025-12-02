@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>福彩3D智能预测系统 - 权限验证</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- MySQL同步客户端 -->
+    <script src="utils/mysql_sync_client.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a56db',
+                        secondary: '#e02424',
+                        accent: '#f59e0b',
+                        dark: '#111827',
+                        light: '#f3f4f6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .btn-primary {
+            background-color: #1a56db;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 300ms ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background-color: rgba(26, 86, 219, 0.9);
+        }
+        .btn-outline {
+            border: 1px solid #d1d5db;
+            background-color: transparent;
+            color: #374151;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 300ms ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            font-weight: 500;
+        }
+        .btn-outline:hover {
+            background-color: #f9fafb;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            transition: all 300ms ease-in-out;
+            outline: none;
+        }
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1);
+            border-color: rgba(26, 86, 219, 0.5);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 300ms ease-in-out;
+        }
+        .card-shadow:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-amber-50 to-orange-50 min-h-screen flex items-center justify-center p-4">
+    <!-- 主容器 -->
+    <div class="w-full max-w-6xl flex flex-col md:flex-row gap-8 items-center justify-center">
+        <!-- 左侧：管理员登录 -->
+        <div class="w-full max-w-md bg-white rounded-2xl p-8 card-shadow">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-dark">管理员登录</h2>
+                <p class="text-gray-500 mt-2">输入密码访问管理功能</p>
+            </div>
+            
+            <form id="admin-login-form" class="space-y-6">
+                <div class="space-y-2">
+                    <label for="admin-password" class="block text-sm font-medium text-gray-700">密码</label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="admin-password" 
+                            class="input-field pr-10" 
+                            placeholder="请输入管理员密码"
+                            required
+                        >
+                        <button 
+                            type="button" 
+                            id="toggle-password" 
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                            <i class="fa fa-eye-slash"></i>
+                        </button>
+                    </div>
+                    <p id="admin-error" class="text-secondary text-sm hidden">密码错误，请重试</p>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fa fa-lock mr-2"></i> 安全登录
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // 检查并初始化mysqlSyncClient
+        function checkMysqlSyncClient() {
+            if (typeof window.mysqlSyncClient === 'undefined') {
+                console.warn('mysqlSyncClient未加载，将使用本地存储模式');
+                // 创建一个简单的模拟对象
+                window.mysqlSyncClient = {
+                    registerCustomer: async function(data) {
+                        throw new Error('mysqlSyncClient不可用');
+                    },
+                    syncData: async function() {
+                        throw new Error('mysqlSyncClient不可用');
+                    },
+                    addToOfflineQueue: function(type, data) {
+                        console.log('将数据添加到本地离线队列:', type, data);
+                        const queue = JSON.parse(localStorage.getItem('offlineSyncQueue') || '[]');
+                        queue.push({ type, data, timestamp: new Date().toISOString() });
+                        localStorage.setItem('offlineSyncQueue', JSON.stringify(queue));
+                    },
+                    getServerCustomers: async function() {
+                        throw new Error('mysqlSyncClient不可用');
+                    }
+                };
+            } else {
+                console.log('mysqlSyncClient已成功加载');
+            }
+        }
+        
+        // 管理员登录时尝试从服务器获取最新客户数据
+        async function syncClientDataOnAdminLogin() {
+            try {
+                // 检查是否有mysqlSyncClient可用且getServerCustomers方法存在
+                if (typeof window.mysqlSyncClient !== 'undefined' && typeof window.mysqlSyncClient.getServerCustomers === 'function') {
+                    // 显示加载中状态
+                    const loginForm = document.getElementById('admin-login-form');
+                    let originalSubmitText = '登录';
+                    let submitButton = null;
+                    
+                    if (loginForm) {
+                        submitButton = loginForm.querySelector('button[type="submit"]');
+                        if (submitButton) {
+                            originalSubmitText = submitButton.textContent;
+                            submitButton.textContent = '登录中...';
+                            submitButton.disabled = true;
+                        }
+                    }
+                    
+                    try {
+                        // 显示同步中状态
+                        updateSyncStatusIndicator('syncing', '同步客户数据中...');
+                        
+                        // 从服务器获取客户数据
+                        console.log('尝试从服务器同步客户数据...');
+                        const serverCustomers = await window.mysqlSyncClient.getServerCustomers();
+                        
+                        let hasUpdatedData = false;
+                        
+                        if (serverCustomers && Array.isArray(serverCustomers.authorized)) {
+                            // 更新本地授权客户数据
+                            const currentAuthorized = JSON.parse(localStorage.getItem('authorizedClients') || '[]');
+                            
+                            // 合并服务器数据和本地数据，避免覆盖
+                            const mergedAuthorized = mergeClientData(currentAuthorized, serverCustomers.authorized);
+                            if (mergedAuthorized.length !== currentAuthorized.length) {
+                                localStorage.setItem('authorizedClients', JSON.stringify(mergedAuthorized));
+                                console.log('成功同步服务器授权客户数据，更新数量:', mergedAuthorized.length);
+                                hasUpdatedData = true;
+                            }
+                        }
+                        
+                        if (serverCustomers && Array.isArray(serverCustomers.pending)) {
+                            // 更新本地待处理客户数据
+                            const currentPending = JSON.parse(localStorage.getItem('pendingClients') || '[]');
+                            const mergedPending = mergeClientData(currentPending, serverCustomers.pending);
+                            if (mergedPending.length !== currentPending.length) {
+                                localStorage.setItem('pendingClients', JSON.stringify(mergedPending));
+                                console.log('成功同步服务器待处理客户数据，更新数量:', mergedPending.length);
+                                hasUpdatedData = true;
+                            }
+                        }
+                        
+                        // 如果有数据更新，显示成功消息
+                        if (hasUpdatedData) {
+                            updateSyncStatusIndicator('success', '客户数据同步完成');
+                        } else {
+                            updateSyncStatusIndicator('success', '客户数据已是最新');
+                        }
+                    } catch (syncError) {
+                        console.warn('同步服务器客户数据失败，将使用本地数据:', syncError);
+                        // 不显示错误信息，只在控制台记录
+                        // updateSyncStatusIndicator('error', '客户数据同步失败，使用本地数据');
+                        // 继续使用本地数据，不影响登录
+                    } finally {
+                        // 恢复按钮状态
+                        if (submitButton) {
+                            submitButton.textContent = originalSubmitText;
+                            submitButton.disabled = false;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('同步客户数据时发生错误:', error);
+                // 不显示错误信息，只在控制台记录
+                // updateSyncStatusIndicator('error', '客户数据同步异常');
+            }
+        }
+        
+        // 合并客户数据，智能解决冲突
+        function mergeClientData(localData, serverData) {
+            if (!serverData || !Array.isArray(serverData)) return localData;
+            
+            const localMap = new Map();
+            
+            // 先将本地数据添加到Map中
+            localData.forEach(client => {
+                if (client && client.phone) {
+                    localMap.set(client.phone, client);
+                }
+            });
+            
+            // 处理服务器数据
+            serverData.forEach(serverClient => {
+                if (serverClient && serverClient.phone) {
+                    // 检查是否存在冲突
+                    if (localMap.has(serverClient.phone)) {
+                        // 存在冲突，需要解决
+                        const localClient = localMap.get(serverClient.phone);
+                        
+                        // 解析时间戳用于比较
+                        const localTime = new Date(localClient.lastModified || localClient.registerTime || 0).getTime();
+                        const serverTime = new Date(serverClient.timestamp || 0).getTime();
+                        
+                        // 状态优先级: approved > pending > rejected
+                        const statusPriority = { 'approved': 3, 'pending': 2, 'rejected': 1 };
+                        const localStatusPriority = statusPriority[localClient.status] || 0;
+                        const serverStatusPriority = statusPriority[serverClient.status || 'pending'] || 0;
+                        
+                        // 决定使用哪个版本：
+                        // 1. 状态优先级更高的优先
+                        // 2. 状态相同时，时间戳更新的优先
+                        // 3. 本地已同步到服务器的优先保留
+                        let shouldUseServerVersion = false;
+                        
+                        if (serverStatusPriority > localStatusPriority) {
+                            shouldUseServerVersion = true;
+                        } else if (serverStatusPriority === localStatusPriority) {
+                            if (serverTime > localTime) {
+                                shouldUseServerVersion = true;
+                            }
+                        }
+                        
+                        // 特殊情况：如果本地数据已经同步到服务器，则优先保留本地数据
+                        if (localClient.syncStatus === 'synced') {
+                            shouldUseServerVersion = false;
+                        }
+                        
+                        if (shouldUseServerVersion) {
+                            console.log(`检测到客户数据冲突，使用服务器版本: ${serverClient.phone}`);
+                            // 使用服务器数据，但保留本地ID和同步状态
+                            const mergedClient = {
+                                ...localClient, // 保留本地所有属性
+                                name: serverClient.name || localClient.name,
+                                status: serverClient.status || localClient.status,
+                                verifyCode: serverClient.verify_code || serverClient.verifyCode || localClient.verifyCode,
+                                registerTime: localClient.registerTime, // 保留原始注册时间
+                                syncStatus: 'conflict_resolved',
+                                lastModified: new Date().toISOString()
+                            };
+                            localMap.set(serverClient.phone, mergedClient);
+                        } else {
+                            console.log(`检测到客户数据冲突，保留本地版本: ${localClient.phone}`);
+                            // 保留本地数据，但更新同步状态
+                            localClient.syncStatus = 'conflict_resolved';
+                            localClient.lastModified = new Date().toISOString();
+                            localMap.set(localClient.phone, localClient);
+                        }
+                    } else {
+                        // 没有冲突，添加服务器数据
+                        const localFormatClient = {
+                            id: serverClient.id || 'server-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+                            name: serverClient.name || '',
+                            phone: serverClient.phone,
+                            verifyCode: serverClient.verify_code || serverClient.verifyCode || '',
+                            registerTime: serverClient.timestamp || new Date().toISOString(),
+                            status: serverClient.status || 'pending',
+                            syncStatus: 'synced',
+                            lastModified: new Date().toISOString()
+                        };
+                        localMap.set(localFormatClient.phone, localFormatClient);
+                        console.log(`添加新的服务器客户数据: ${serverClient.phone}`);
+                    }
+                }
+            });
+            
+            return Array.from(localMap.values());
+        }
+        
+        // 更新同步状态指示器
+        function updateSyncStatusIndicator(status, message) {
+            // 检查页面上是否存在同步状态指示器，如果不存在则创建
+            let syncIndicator = document.getElementById('sync-status-indicator');
+            
+            if (!syncIndicator) {
+                // 创建同步状态指示器
+                syncIndicator = document.createElement('div');
+                syncIndicator.id = 'sync-status-indicator';
+                syncIndicator.className = 'fixed bottom-4 right-4 px-3 py-2 rounded-full text-sm font-medium z-50 transition-all duration-300';
+                document.body.appendChild(syncIndicator);
+            }
+            
+            // 设置状态样式和消息
+            switch(status) {
+                case 'syncing':
+                    syncIndicator.className = 'fixed bottom-4 right-4 px-3 py-2 rounded-full text-sm font-medium z-50 transition-all duration-300 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                    syncIndicator.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + (message || '数据同步中...');
+                    break;
+                case 'success':
+                    syncIndicator.className = 'fixed bottom-4 right-4 px-3 py-2 rounded-full text-sm font-medium z-50 transition-all duration-300 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                    syncIndicator.innerHTML = '<i class="fas fa-check-circle mr-2"></i>' + (message || '数据同步成功');
+                    // 3秒后自动隐藏成功提示
+                    setTimeout(() => {
+                        if (syncIndicator && syncIndicator.className.includes('bg-green-100')) {
+                            syncIndicator.style.opacity = '0';
+                            setTimeout(() => {
+                                if (syncIndicator) {
+                                    syncIndicator.remove();
+                                }
+                            }, 300);
+                        }
+                    }, 3000);
+                    break;
+                case 'error':
+                    syncIndicator.className = 'fixed bottom-4 right-4 px-3 py-2 rounded-full text-sm font-medium z-50 transition-all duration-300 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+                    syncIndicator.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>' + (message || '数据同步失败');
+                    break;
+                case 'offline':
+                    syncIndicator.className = 'fixed bottom-4 right-4 px-3 py-2 rounded-full text-sm font-medium z-50 transition-all duration-300 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+                    syncIndicator.innerHTML = '<i class="fas fa-wifi-slash mr-2"></i>' + (message || '离线中，将在网络恢复时同步');
+                    break;
+                default:
+                    // 隐藏指示器
+                    if (syncIndicator) {
+                        syncIndicator.style.opacity = '0';
+                        setTimeout(() => {
+                            if (syncIndicator) {
+                                syncIndicator.remove();
+                            }
+                        }, 300);
+                    }
+            }
+        }
+        
+        // 在网络检测中更新同步状态指示器
+        function updateNetworkStatusUI() {
+            if (navigator.onLine) {
+                updateSyncStatusIndicator('success', '网络连接已恢复');
+            } else {
+                updateSyncStatusIndicator('offline', '离线模式，数据将在网络恢复时同步');
+            }
+        }
+        
+        // 初始化存储
+        function initDataStorage() {
+            // 确保必要的存储项存在
+            if (!localStorage.getItem('invitationCodes')) {
+                localStorage.setItem('invitationCodes', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('pendingClients')) {
+                localStorage.setItem('pendingClients', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('authorizedClients')) {
+                localStorage.setItem('authorizedClients', JSON.stringify([]));
+            }
+        }
+        
+        // 切换密码显示/隐藏
+        document.getElementById('toggle-password').addEventListener('click', function(event) {
+            const passwordInput = document.getElementById('admin-password');
+            const icon = event.currentTarget.querySelector('i');
+            
+            if (passwordInput && icon) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            }
+        });
+        
+        // 显示指定的管理员视图
+        function showAdminView(viewId) {
+            const views = document.querySelectorAll('.admin-view');
+            views.forEach(view => view.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+            
+            // 如果是客户列表视图，重新加载数据
+            if (viewId === 'customer-list-view') {
+                loadCustomersData();
+            }
+        }
+        
+        // 格式化日期
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '';
+            
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+        
+        // 渲染客户表格
+        function renderCustomerTable(customers) {
+            const tableBody = document.getElementById('customers-table-body');
+            tableBody.innerHTML = '';
+            
+            if (customers.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">暂无客户数据</td></tr>';
+                return;
+            }
+            
+            customers.forEach(customer => {
+                const row = document.createElement('tr');
+                
+                // 根据状态设置行样式
+                if (customer.status === 'expired') {
+                    row.className = 'bg-red-50';
+                } else if (customer.status === 'pending') {
+                    row.className = 'bg-yellow-50';
+                }
+                
+                // 根据状态显示不同的标签和颜色
+                let statusText;
+                switch(customer.status) {
+                    case 'active':
+                        statusText = '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">激活</span>';
+                        break;
+                    case 'expired':
+                        statusText = '<span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">已过期</span>';
+                        break;
+                    case 'pending':
+                        statusText = '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">待验证</span>';
+                        break;
+                    default:
+                        statusText = '<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">未知</span>';
+                }
+                
+                // 计算剩余到期天数
+                let remainingDays = '';
+                if (customer.expireTime) {
+                    const today = new Date();
+                    const expireDate = new Date(customer.expireTime);
+                    const diffTime = expireDate - today;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    remainingDays = diffDays > 0 ? `${diffDays}天` : '已过期';
+                }
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 border-t">${customer.name}</td>
+                    <td class="px-4 py-3 border-t">${customer.phone}</td>
+                    <td class="px-4 py-3 border-t">${formatDate(customer.registerTime)}</td>
+                    <td class="px-4 py-3 border-t">${formatDate(customer.expireTime)}</td>
+                    <td class="px-4 py-3 border-t">${remainingDays}</td>
+                    <td class="px-4 py-3 border-t">${statusText}</td>
+                    <td class="px-4 py-3 border-t">
+                        <div class="flex space-x-2">
+                            <button class="edit-customer bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition" data-id="${customer.id}">编辑</button>
+                            <button class="extend-customer bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs transition" data-id="${customer.id}">延期</button>
+                            <button class="delete-customer bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition" data-id="${customer.id}">删除</button>
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // 绑定操作按钮事件
+            document.querySelectorAll('.edit-customer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    editCustomer(this.dataset.id);
+                });
+            });
+            
+            document.querySelectorAll('.extend-customer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    extendCustomer(this.dataset.id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-customer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    deleteCustomer(this.dataset.id);
+                });
+            });
+        }
+        
+        // 检查即将到期的客户
+        function checkExpiringCustomers(customers) {
+            const today = new Date();
+            const thirtyDaysLater = new Date();
+            thirtyDaysLater.setDate(today.getDate() + 30);
+            
+            const expiringCustomers = customers.filter(customer => {
+                const expireDate = new Date(customer.expireTime);
+                return expireDate <= thirtyDaysLater && expireDate >= today;
+            });
+            
+            const alertsContainer = document.getElementById('expiring-customers-list');
+            alertsContainer.innerHTML = '';
+            
+            if (expiringCustomers.length === 0) {
+                alertsContainer.innerHTML = '<p class="text-gray-600">暂无即将到期的客户</p>';
+                return;
+            }
+            
+            expiringCustomers.forEach(customer => {
+                const alert = document.createElement('div');
+                alert.className = 'flex justify-between items-center p-2 bg-white rounded shadow-sm';
+                
+                const expireDate = new Date(customer.expireTime);
+                const daysRemaining = Math.ceil((expireDate - today) / (1000 * 60 * 60 * 24));
+                
+                alert.innerHTML = `
+                    <span>${customer.name} - ${customer.phone} (剩余 ${daysRemaining} 天)</span>
+                    <button class="extend-now bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs transition" data-id="${customer.id}">立即延期</button>
+                `;
+                
+                alertsContainer.appendChild(alert);
+            });
+            
+            // 绑定立即延期按钮事件
+            document.querySelectorAll('.extend-now').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    extendCustomer(this.dataset.id);
+                });
+            });
+        }
+        
+        // 加载客户数据
+        function loadCustomersData() {
+            // 从localStorage读取授权客户和待验证客户数据
+            const authorizedClients = JSON.parse(localStorage.getItem('authorizedClients') || '[]');
+            const pendingClients = JSON.parse(localStorage.getItem('pendingClients') || '[]');
+            
+            // 将待验证客户的状态设置为pending
+            const pendingClientsWithStatus = pendingClients.map(client => ({
+                ...client,
+                status: 'pending'
+            }));
+            
+            // 将授权客户的状态设置为active或expired
+            const authorizedClientsWithStatus = authorizedClients.map(client => {
+                const status = client.expireTime && new Date(client.expireTime) < new Date() 
+                    ? 'expired' 
+                    : 'active';
+                return {
+                    ...client,
+                    status
+                };
+            });
+            
+            // 合并所有客户数据
+            const allCustomers = [...authorizedClientsWithStatus, ...pendingClientsWithStatus];
+            
+            // 按注册时间降序排序
+            allCustomers.sort((a, b) => {
+                const timeA = a.registerTime ? new Date(a.registerTime).getTime() : 0;
+                const timeB = b.registerTime ? new Date(b.registerTime).getTime() : 0;
+                return timeB - timeA;
+            });
+            
+            renderCustomerTable(allCustomers);
+            checkExpiringCustomers(allCustomers);
+        }
+        
+        // 编辑客户信息
+        function editCustomer(customerId) {
+            // 获取客户数据
+            const authorizedClients = JSON.parse(localStorage.getItem('authorizedClients') || '[]');
+            const pendingClients = JSON.parse(localStorage.getItem('pendingClients') || '[]');
+            
+            let customer = authorizedClients.find(client => client.id === customerId);
+            let isPending = false;
+            
+            if (!customer) {
+                customer = pendingClients.find(client => client.id === customerId);
+                isPending = true;
+            }
+            
+            if (!customer) {
+                alert('客户不存在');
+                return;
+            }
+            
+            // 创建编辑表单
+            const editFormHtml = `
+                <div id="edit-customer-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div class="bg-white rounded-2xl p-8 max-w-md w-full">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-dark">编辑客户信息</h3>
+                            <button id="close-edit-modal" class="text-gray-400 hover:text-gray-600">
+                                <i class="fa fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <form id="edit-customer-form" class="space-y-6">
+                            <input type="hidden" id="edit-customer-id" value="${customer.id}">
+                            <input type="hidden" id="edit-customer-is-pending" value="${isPending}">
+                            
+                            <div class="space-y-2">
+                                <label for="edit-customer-name" class="block text-sm font-medium text-gray-700">客户姓名 <span class="text-secondary">*</span></label>
+                                <input 
+                                    type="text" 
+                                    id="edit-customer-name" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                    value="${customer.name}" 
+                                    required
+                                >
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="edit-customer-phone" class="block text-sm font-medium text-gray-700">手机号码 <span class="text-secondary">*</span></label>
+                                <input 
+                                    type="tel" 
+                                    id="edit-customer-phone" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                    value="${customer.phone}" 
+                                    pattern="^1[3-9]\d{9}$" 
+                                    required
+                                >
+                            </div>
+                            
+                            ${!isPending ? `
+                            <div class="space-y-2">
+                                <label for="edit-customer-status" class="block text-sm font-medium text-gray-700">状态</label>
+                                <select 
+                                    id="edit-customer-status" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="active" ${customer.status === 'active' ? 'selected' : ''}>激活</option>
+                                    <option value="expired" ${customer.status === 'expired' ? 'selected' : ''}>已过期</option>
+                                </select>
+                            </div>
+                            ` : ''}
+                            
+                            <div class="flex justify-end space-x-3 pt-2">
+                                <button type="button" id="cancel-edit" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">取消</button>
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600">保存</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            // 添加到页面
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = editFormHtml;
+            document.body.appendChild(modalContainer.firstElementChild);
+            
+            // 绑定事件
+            document.getElementById('close-edit-modal').addEventListener('click', function() {
+                document.getElementById('edit-customer-modal').remove();
+            });
+            
+            document.getElementById('cancel-edit').addEventListener('click', function() {
+                document.getElementById('edit-customer-modal').remove();
+            });
+            
+            document.getElementById('edit-customer-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('edit-customer-id').value;
+                const name = document.getElementById('edit-customer-name').value.trim();
+                const phone = document.getElementById('edit-customer-phone').value.trim();
+                const isPending = document.getElementById('edit-customer-is-pending').value === 'true';
+                const status = isPending ? 'pending' : document.getElementById('edit-customer-status').value;
+                
+                // 更新客户数据
+                if (isPending) {
+                    const updatedPendingClients = pendingClients.map(client => {
+                        if (client.id === id) {
+                            return {
+                                ...client,
+                                name,
+                                phone,
+                                lastModified: new Date().toISOString()
+                            };
+                        }
+                        return client;
+                    });
+                    localStorage.setItem('pendingClients', JSON.stringify(updatedPendingClients));
+                } else {
+                    const updatedAuthorizedClients = authorizedClients.map(client => {
+                        if (client.id === id) {
+                            return {
+                                ...client,
+                                name,
+                                phone,
+                                status,
+                                lastModified: new Date().toISOString()
+                            };
+                        }
+                        return client;
+                    });
+                    localStorage.setItem('authorizedClients', JSON.stringify(updatedAuthorizedClients));
+                }
+                
+                // 关闭模态框并刷新数据
+                document.getElementById('edit-customer-modal').remove();
+                loadCustomersData();
+                alert('客户信息已更新');
+            });
+        }
+        
+        // 延期客户授权
+        function extendCustomer(customerId) {
+            // 获取客户数据
+            const authorizedClients = JSON.parse(localStorage.getItem('authorizedClients') || '[]');
+            const customer = authorizedClients.find(client => client.id === customerId);
+            
+            if (!customer) {
+                alert('客户不存在或未授权');
+                return;
+            }
+            
+            // 创建延期表单
+            const extendFormHtml = `
+                <div id="extend-customer-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div class="bg-white rounded-2xl p-8 max-w-md w-full">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-dark">延期客户授权</h3>
+                            <button id="close-extend-modal" class="text-gray-400 hover:text-gray-600">
+                                <i class="fa fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <form id="extend-customer-form" class="space-y-6">
+                            <input type="hidden" id="extend-customer-id" value="${customer.id}">
+                            
+                            <div class="space-y-2">
+                                <label for="extend-days" class="block text-sm font-medium text-gray-700">延期天数 <span class="text-secondary">*</span></label>
+                                <select 
+                                    id="extend-days" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="1">1天</option>
+                                    <option value="3">3天</option>
+                                    <option value="30" selected>30天</option>
+                                    <option value="90">90天</option>
+                                    <option value="180">180天</option>
+                                    <option value="365">365天</option>
+                                </select>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="extend-notes" class="block text-sm font-medium text-gray-700">备注信息</label>
+                                <textarea 
+                                    id="extend-notes" 
+                                    rows="2" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                    placeholder="请输入备注信息（选填）"></textarea>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-3 pt-2">
+                                <button type="button" id="cancel-extend" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">取消</button>
+                                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-md text-sm font-medium hover:bg-yellow-600">确认延期</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            // 添加到页面
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = extendFormHtml;
+            document.body.appendChild(modalContainer.firstElementChild);
+            
+            // 绑定事件
+            document.getElementById('close-extend-modal').addEventListener('click', function() {
+                document.getElementById('extend-customer-modal').remove();
+            });
+            
+            document.getElementById('cancel-extend').addEventListener('click', function() {
+                document.getElementById('extend-customer-modal').remove();
+            });
+            
+            document.getElementById('extend-customer-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('extend-customer-id').value;
+                const extendDays = parseInt(document.getElementById('extend-days').value);
+                const notes = document.getElementById('extend-notes').value.trim();
+                
+                // 计算新的过期时间
+                const currentExpireDate = customer.expireTime ? new Date(customer.expireTime) : new Date();
+                const newExpireDate = new Date(currentExpireDate);
+                newExpireDate.setDate(newExpireDate.getDate() + extendDays);
+                
+                // 更新客户数据
+                const updatedAuthorizedClients = authorizedClients.map(client => {
+                    if (client.id === id) {
+                        return {
+                            ...client,
+                            expireTime: newExpireDate.toISOString(),
+                            status: 'active',
+                            lastModified: new Date().toISOString(),
+                            extendHistory: [...(client.extendHistory || []), {
+                                extendDays,
+                                notes,
+                                extendTime: new Date().toISOString()
+                            }]
+                        };
+                    }
+                    return client;
+                });
+                
+                localStorage.setItem('authorizedClients', JSON.stringify(updatedAuthorizedClients));
+                
+                // 关闭模态框并刷新数据
+                document.getElementById('extend-customer-modal').remove();
+                loadCustomersData();
+                alert('客户授权已延期');
+            });
+        }
+        
+        // 删除客户
+        function deleteCustomer(customerId) {
+            if (confirm('确定要删除此客户吗？')) {
+                // 获取客户数据
+                const authorizedClients = JSON.parse(localStorage.getItem('authorizedClients') || '[]');
+                const pendingClients = JSON.parse(localStorage.getItem('pendingClients') || '[]');
+                
+                // 检查客户类型
+                const isAuthorized = authorizedClients.some(client => client.id === customerId);
+                const isPending = pendingClients.some(client => client.id === customerId);
+                
+                if (isAuthorized) {
+                    const updatedAuthorizedClients = authorizedClients.filter(client => client.id !== customerId);
+                    localStorage.setItem('authorizedClients', JSON.stringify(updatedAuthorizedClients));
+                } else if (isPending) {
+                    const updatedPendingClients = pendingClients.filter(client => client.id !== customerId);
+                    localStorage.setItem('pendingClients', JSON.stringify(updatedPendingClients));
+                }
+                
+                // 刷新数据
+                loadCustomersData();
+                alert('客户已删除');
+            }
+        }
+        
+        // 过滤客户
+        function filterCustomers(keyword) {
+            // 实现客户过滤功能
+            console.log('过滤客户:', keyword);
+        }
+        
+        // 生成随机邀请码函数
+        function generateInvitationCode() {
+            const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // 仅包含大写字母
+            const digits = '0123456789'; // 包含所有数字
+            
+            // 生成1个随机字母
+            const randomLetter = letters.charAt(Math.floor(Math.random() * letters.length));
+            
+            // 生成5个随机数字
+            let randomDigits = '';
+            for (let i = 0; i < 5; i++) {
+                randomDigits += digits.charAt(Math.floor(Math.random() * digits.length));
+            }
+            
+            // 组合字母和数字，并随机打乱顺序
+            let combined = randomLetter + randomDigits;
+            combined = combined.split('').sort(() => Math.random() - 0.5).join('');
+            
+            return combined;
+        }
+        
+        // 获取邀请码记录
+        function getInvitationCodes() {
+            const codes = localStorage.getItem('invitationCodes');
+            return codes ? JSON.parse(codes) : [];
+        }
+        
+        // 保存邀请码记录
+        function saveInvitationCode(codeData) {
+            const codes = getInvitationCodes();
+            codes.push(codeData);
+            localStorage.setItem('invitationCodes', JSON.stringify(codes));
+            return codeData;
+        }
+        
+        // 删除邀请码
+        function deleteInvitationCode(codeId) {
+            const codes = getInvitationCodes();
+            const codeToDelete = codes.find(code => code.id === codeId);
+            if (codeToDelete) {
+                // 从邀请码列表中删除
+                const filteredCodes = codes.filter(code => code.id !== codeId);
+                localStorage.setItem('invitationCodes', JSON.stringify(filteredCodes));
+                
+                // 从待验证客户列表中删除对应的客户
+                const pendingClients = JSON.parse(localStorage.getItem('pendingClients') || '[]');
+                const filteredPendingClients = pendingClients.filter(client => client.verifyCode !== codeToDelete.code);
+                localStorage.setItem('pendingClients', JSON.stringify(filteredPendingClients));
+                
+                // 从授权客户列表中删除对应的客户（如果存在）
+                const authorizedClients = JSON.parse(localStorage.getItem('authorizedClients') || '[]');
+                const filteredAuthorizedClients = authorizedClients.filter(client => {
+                    // 检查客户是否使用了该邀请码
+                    return client.verifyCode !== codeToDelete.code;
+                });
+                localStorage.setItem('authorizedClients', JSON.stringify(filteredAuthorizedClients));
+                
+                // 刷新客户列表
+                loadCustomersData();
+                
+                return filteredCodes;
+            }
+            return codes;
+        }
+        
+        // 重新生成邀请码
+        function regenerateInvitationCode(codeId) {
+            const codes = getInvitationCodes();
+            const updatedCodes = codes.map(code => {
+                if (code.id === codeId) {
+                    // 生成新的邀请码
+                    const newCode = generateInvitationCode();
+                    return {
+                        ...code,
+                        code: newCode,
+                        status: 'unused',
+                        generateTime: new Date().toISOString()
+                    };
+                }
+                return code;
+            });
+            localStorage.setItem('invitationCodes', JSON.stringify(updatedCodes));
+            return updatedCodes;
+        }
+        
+        // 生成邀请码表单提交处理
+        function handleGenerateInviteFormSubmit(event) {
+            event.preventDefault();
+            
+            const clientName = document.getElementById('invite-client-name').value;
+            const clientPhone = document.getElementById('invite-client-phone').value;
+            const expireDays = parseInt(document.getElementById('invite-expire-days').value);
+            const notes = document.getElementById('invite-notes').value;
+            
+            // 简单验证
+            if (!clientName.trim()) {
+                alert('请输入客户姓名');
+                return;
+            }
+            
+            if (!clientPhone.trim()) {
+                alert('请输入联系电话');
+                return;
+            }
+            
+            // 生成邀请码
+            const code = generateInvitationCode();
+            const now = new Date();
+            const codeData = {
+                id: Date.now().toString(), // 使用时间戳作为唯一ID
+                code,
+                clientName,
+                clientPhone,
+                expireDays,
+                notes,
+                generateTime: now.toISOString(),
+                status: 'unused' // unused: 未使用, used: 已使用, expired: 已过期
+            };
+            
+            // 保存到localStorage
+            saveInvitationCode(codeData);
+            
+            // 将客户添加到待验证客户列表
+            const pendingClients = JSON.parse(localStorage.getItem('pendingClients') || '[]');
+            // 检查客户是否已存在
+            const existingClientIndex = pendingClients.findIndex(client => client.phone === clientPhone || client.verifyCode === code);
+            if (existingClientIndex === -1) {
+                // 客户不存在，添加到待验证列表
+                // 计算过期时间
+                const expireDate = new Date();
+                expireDate.setDate(expireDate.getDate() + expireDays);
+                
+                const newClient = {
+                    id: `pending_${Date.now()}`,
+                    name: clientName,
+                    phone: clientPhone,
+                    verifyCode: code,
+                    registerTime: now.toISOString(),
+                    expireTime: expireDate.toISOString(),
+                    expireDays: expireDays,
+                    notes: notes,
+                    status: 'pending',
+                    syncStatus: 'local',
+                    lastModified: now.toISOString()
+                };
+                pendingClients.push(newClient);
+                localStorage.setItem('pendingClients', JSON.stringify(pendingClients));
+            }
+            
+            // 显示成功消息
+            alert(`邀请码生成成功！\n\n客户: ${clientName}\n电话: ${clientPhone}\n邀请码: ${code}\n期限: ${expireDays}天`);
+            
+            // 重置表单
+            event.target.reset();
+            
+            // 刷新邀请码列表和客户列表
+            loadInviteCodes();
+            loadCustomersData();
+        }
+        
+        // 渲染邀请码列表
+        function renderInviteCodesList(codes) {
+            const tableBody = document.getElementById('invite-codes-table-body');
+            
+            if (!codes || codes.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">暂无邀请码数据</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            codes.forEach(code => {
+                const generateTime = new Date(code.generateTime);
+                const formattedTime = formatDate(generateTime);
+                
+                // 计算是否过期（如果已使用）
+                let statusText = '未使用';
+                let statusClass = 'text-yellow-500';
+                
+                if (code.status === 'used') {
+                    statusText = '已使用';
+                    statusClass = 'text-green-500';
+                    
+                    // 检查是否已过期
+                    if (code.activationTime) {
+                        const activationDate = new Date(code.activationTime);
+                        const expireDate = new Date(activationDate.getTime() + code.expireDays * 24 * 60 * 60 * 1000);
+                        if (expireDate < new Date()) {
+                            statusText = '已过期';
+                            statusClass = 'text-red-500';
+                        }
+                    }
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="font-medium text-gray-900">${code.clientName}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${code.clientPhone}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm font-mono font-medium text-indigo-600">${code.code}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">${formattedTime}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">${code.expireDays}天</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm font-medium ${statusClass}">${statusText}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        ${code.status === 'unused' ? `
+                        <button class="text-red-500 hover:text-red-700 mr-3 delete-invite-code" data-id="${code.id}">
+                            <i class="fa fa-trash"></i>
+                        </button>` : ''}
+                        <button class="text-blue-500 hover:text-blue-700 copy-invite-code" data-code="${code.code}">
+                            <i class="fa fa-copy"></i>
+                        </button>
+                        <button class="text-green-500 hover:text-green-700 ml-3 regenerate-invite-code" data-id="${code.id}">
+                            <i class="fa fa-refresh"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // 绑定删除按钮事件
+            document.querySelectorAll('.delete-invite-code').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (confirm('确定要删除此邀请码吗？')) {
+                        const codeId = this.getAttribute('data-id');
+                        deleteInvitationCode(codeId);
+                        loadInviteCodes();
+                    }
+                });
+            });
+            
+            // 绑定复制按钮事件
+            document.querySelectorAll('.copy-invite-code').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const code = this.getAttribute('data-code');
+                    navigator.clipboard.writeText(code)
+                        .then(() => alert(`邀请码 ${code} 已复制到剪贴板`))
+                        .catch(err => alert('复制失败，请手动复制'));
+                });
+            });
+            
+            // 绑定重新生成邀请码按钮事件
+            document.querySelectorAll('.regenerate-invite-code').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (confirm('确定要重新生成此邀请码吗？')) {
+                        const codeId = this.getAttribute('data-id');
+                        regenerateInvitationCode(codeId);
+                        loadInviteCodes();
+                    }
+                });
+            });
+        }
+        
+        // 加载邀请码列表
+        function loadInviteCodes() {
+            const codes = getInvitationCodes();
+            // 按生成时间倒序排列
+            codes.sort((a, b) => new Date(b.generateTime) - new Date(a.generateTime));
+            renderInviteCodesList(codes);
+        }
+        
+        // 过滤邀请码
+        function filterInviteCodes(keyword) {
+            const codes = getInvitationCodes();
+            const filteredCodes = codes.filter(code => 
+                code.clientName.toLowerCase().includes(keyword.toLowerCase()) ||
+                code.clientPhone.includes(keyword) ||
+                code.code.toLowerCase().includes(keyword.toLowerCase())
+            );
+            renderInviteCodesList(filteredCodes);
+        }
+        
+        // 加载到期提醒数据
+        function loadExpirationReminders() {
+            // 获取所有授权客户
+            const authorizedClients = JSON.parse(localStorage.getItem('authorizedClients') || '[]');
+            const today = new Date();
+            const thirtyDaysLater = new Date();
+            thirtyDaysLater.setDate(today.getDate() + 30);
+            
+            // 筛选出即将到期的客户（30天内到期）
+            const expiringCustomers = authorizedClients.filter(customer => {
+                if (!customer.expireTime) return false;
+                const expireDate = new Date(customer.expireTime);
+                return expireDate <= thirtyDaysLater && expireDate >= today;
+            });
+            
+            // 按到期时间排序
+            expiringCustomers.sort((a, b) => {
+                const timeA = new Date(a.expireTime).getTime();
+                const timeB = new Date(b.expireTime).getTime();
+                return timeA - timeB;
+            });
+            
+            const reminderList = document.getElementById('expiration-reminder-list');
+            
+            if (expiringCustomers.length === 0) {
+                reminderList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fa fa-bell-o text-4xl mb-2"></i>
+                        <p>暂无即将到期的客户</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 生成到期提醒列表
+            const remindersHtml = expiringCustomers.map(customer => {
+                const expireDate = new Date(customer.expireTime);
+                const diffTime = expireDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                // 根据剩余天数设置不同的样式
+                let daysClass = '';
+                if (diffDays <= 7) {
+                    daysClass = 'bg-red-100 text-red-800';
+                } else if (diffDays <= 15) {
+                    daysClass = 'bg-yellow-100 text-yellow-800';
+                } else {
+                    daysClass = 'bg-blue-100 text-blue-800';
+                }
+                
+                return `
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium">${customer.name}</h4>
+                            <p class="text-sm text-gray-600">${customer.phone}</p>
+                            <p class="text-sm text-gray-500">到期时间: ${formatDate(customer.expireTime)}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-medium ${daysClass}">${diffDays}天后到期</span>
+                            <div class="mt-3 space-x-2">
+                                <button class="px-3 py-1 bg-yellow-500 text-white rounded-md text-xs font-medium hover:bg-yellow-600 transition duration-200 extend-reminder-customer" data-id="${customer.id}">
+                                    延期
+                                </button>
+                                <button class="px-3 py-1 bg-blue-500 text-white rounded-md text-xs font-medium hover:bg-blue-600 transition duration-200 edit-reminder-customer" data-id="${customer.id}">
+                                    查看
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            reminderList.innerHTML = remindersHtml;
+            
+            // 绑定事件
+            document.querySelectorAll('.extend-reminder-customer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    extendCustomer(this.dataset.id);
+                });
+            });
+            
+            document.querySelectorAll('.edit-reminder-customer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    editCustomer(this.dataset.id);
+                });
+            });
+        }
+        
+        // 修改管理员密码
+        function changeAdminPassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // 验证当前密码
+            const adminPassword = localStorage.getItem('adminPassword') || 'yang781223';
+            if (currentPassword !== adminPassword) {
+                alert('当前密码错误');
+                return;
+            }
+            
+            // 验证新密码
+            if (newPassword.length < 6) {
+                alert('新密码长度不能少于6位');
+                return;
+            }
+            
+            // 验证确认密码
+            if (newPassword !== confirmPassword) {
+                alert('两次输入的密码不一致');
+                return;
+            }
+            
+            // 保存新密码
+            localStorage.setItem('adminPassword', newPassword);
+            alert('密码修改成功');
+            
+            // 重置表单
+            document.getElementById('change-password-form').reset();
+        }
+        
+        // 修改共振分析密码
+        function changeResonancePassword() {
+            const newPassword = document.getElementById('resonance-new-password').value;
+            const confirmPassword = document.getElementById('resonance-confirm-password').value;
+            
+            // 验证新密码
+            if (newPassword.length < 6) {
+                alert('新密码长度不能少于6位');
+                return;
+            }
+            
+            // 验证确认密码
+            if (newPassword !== confirmPassword) {
+                alert('两次输入的密码不一致');
+                return;
+            }
+            
+            // 保存新密码
+            localStorage.setItem('resonancePassword', newPassword);
+            alert('共振分析密码修改成功');
+            
+            // 重置表单
+            document.getElementById('change-resonance-password-form').reset();
+        }
+        
+        function initAdminSystemEvents() {
+            // 退出登录
+            document.getElementById('admin-logout').addEventListener('click', function() {
+                localStorage.removeItem('adminLoggedIn');
+                localStorage.removeItem('adminLoginTime');
+                window.location.reload();
+            });
+            
+            // 导航切换
+            document.getElementById('nav-customer-list').addEventListener('click', function() {
+                showAdminView('customer-list-view');
+            });
+            
+            document.getElementById('nav-generate-invite').addEventListener('click', function() {
+                showAdminView('generate-invite-view');
+                loadInviteCodes(); // 加载邀请码列表
+            });
+            
+            document.getElementById('nav-expiration-reminder').addEventListener('click', function() {
+                showAdminView('expiration-reminder-view');
+                loadExpirationReminders(); // 加载到期提醒数据
+            });
+            
+            document.getElementById('nav-system-settings').addEventListener('click', function() {
+                showAdminView('system-settings-view');
+            });
+            
+            // 搜索功能
+            document.getElementById('customer-search').addEventListener('input', function() {
+                filterCustomers(this.value);
+            });
+            
+            // 邀请码搜索功能
+            if (document.getElementById('invite-codes-search')) {
+                document.getElementById('invite-codes-search').addEventListener('input', function() {
+                    filterInviteCodes(this.value);
+                });
+            }
+            
+            // 生成邀请码表单提交
+            if (document.getElementById('generate-invite-form')) {
+                document.getElementById('generate-invite-form').addEventListener('submit', handleGenerateInviteFormSubmit);
+            }
+            
+            // 密码修改表单提交
+            if (document.getElementById('change-password-form')) {
+                document.getElementById('change-password-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    changeAdminPassword();
+                });
+            }
+            
+            // 共振分析密码修改表单提交
+            if (document.getElementById('change-resonance-password-form')) {
+                document.getElementById('change-resonance-password-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    changeResonancePassword();
+                });
+            }
+        }
+        
+        // 管理员登录表单提交
+        document.getElementById('admin-login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password = document.getElementById('admin-password').value;
+            const errorElement = document.getElementById('admin-error');
+            const loginBtn = this.querySelector('button[type="submit"]');
+            
+            // 添加提交动画并禁用按钮
+            this.classList.add('opacity-50');
+            loginBtn.disabled = true;
+            loginBtn.textContent = '登录中...';
+            
+            // 获取管理员密码（默认：yang781223）
+            const adminPassword = localStorage.getItem('adminPassword') || 'yang781223';
+            if (password === adminPassword) {
+                // 设置管理员登录状态
+                localStorage.setItem('adminLoggedIn', 'true');
+                localStorage.setItem('adminUsername', 'admin');
+                localStorage.setItem('adminId', '1');
+                localStorage.setItem('adminLoginTime', new Date().getTime().toString());
+                
+                try {
+                    // 登录成功后尝试同步客户数据
+                    await syncClientDataOnAdminLogin();
+                } catch (error) {
+                    console.error('同步客户数据时发生错误，但不影响登录:', error);
+                }
+                
+                // 延迟跳转到管理员系统
+                setTimeout(() => {
+                    // 直接跳转到管理员系统
+                    if (typeof showAdminSystem === 'function') {
+                        showAdminSystem();
+                    } else {
+                        // 后备方案：跳转到首页
+                        window.location.href = 'index.html';
+                    }
+                }, 1500);
+            } else {
+                // 登录失败
+                errorElement.classList.remove('hidden');
+                // 动画效果
+                errorElement.classList.add('animate-pulse');
+                setTimeout(() => {
+                    errorElement.classList.remove('animate-pulse');
+                }, 1000);
+            }
+            
+            // 恢复表单状态
+            setTimeout(() => {
+                this.classList.remove('opacity-50');
+                loginBtn.disabled = false;
+                loginBtn.textContent = '安全登录';
+            }, 1000);
+        });
+        
+        // 显示管理员系统界面
+        function showAdminSystem() {
+              
+              // 创建并显示管理员系统界面
+              let adminSystemHtml = `
+              <div id="admin-system" class="min-h-screen bg-gray-100 p-4">
+                  <div class="max-w-7xl mx-auto">
+                      <!-- 管理员头部 -->
+                      <header class="bg-white shadow-sm rounded-lg p-4 mb-6">
+                          <div class="flex justify-between items-center">
+                              <h1 class="text-2xl font-bold text-gray-800">管理员系统</h1>
+                              <div class="flex items-center space-x-4">
+                                  <span class="text-gray-600">管理员</span>
+                                  <button id="admin-logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-200">
+                                      退出登录
+                                  </button>
+                              </div>
+                          </div>
+                      </header>
+                      
+                      <!-- 功能导航 -->
+                      <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
+                          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <button id="nav-customer-list" class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-md transition duration-200">
+                                  <i class="fas fa-users mr-2"></i>客户列表
+                              </button>
+                              <button id="nav-generate-invite" class="bg-green-500 hover:bg-green-600 text-white p-4 rounded-md transition duration-200">
+                                  <i class="fas fa-key mr-2"></i>生成邀请码
+                              </button>
+                              <button id="nav-expiration-reminder" class="bg-yellow-500 hover:bg-yellow-600 text-white p-4 rounded-md transition duration-200">
+                                  <i class="fas fa-bell mr-2"></i>到期提醒
+                              </button>
+                              <button id="nav-system-settings" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-md transition duration-200">
+                                  <i class="fas fa-cog mr-2"></i>系统设置
+                              </button>
+                          </div>
+                      </div>
+                      
+                      <!-- 内容区域 -->
+                      <div id="admin-content" class="bg-white shadow-sm rounded-lg p-4">
+                          <div id="customer-list-view" class="admin-view">
+                              <div class="flex justify-between items-center mb-4">
+                                  <h2 class="text-xl font-semibold text-gray-800">客户列表管理</h2>
+                                  <div class="relative">
+                                      <input type="text" id="customer-search" placeholder="搜索客户..." class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                  </div>
+                              </div>
+                              
+                              <!-- 到期提醒卡片 -->
+                              <div id="expiration-alerts" class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-md">
+                                  <h3 class="text-lg font-semibold text-yellow-800 mb-2">即将到期的客户</h3>
+                                  <div id="expiring-customers-list" class="space-y-2">
+                                      <!-- 到期提醒将动态添加 -->
+                                      <p class="text-gray-600">暂无即将到期的客户</p>
+                                  </div>
+                              </div>
+                              
+                              <!-- 客户列表表格 -->
+                              <div class="overflow-x-auto">
+                                  <table class="min-w-full bg-white">
+                                      <thead>
+                                          <tr class="bg-gray-100 text-left text-gray-700">
+                                              <th class="px-4 py-3">客户名称</th>
+                                              <th class="px-4 py-3">电话</th>
+                                              <th class="px-4 py-3">注册时间</th>
+                                              <th class="px-4 py-3">授权期限</th>
+                                              <th class="px-4 py-3">剩余天数</th>
+                                              <th class="px-4 py-3">状态</th>
+                                              <th class="px-4 py-3">操作</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody id="customers-table-body">
+                                          <!-- 客户数据将动态加载 -->
+                                          <tr>
+                                              <td colspan="6" class="px-4 py-8 text-center text-gray-500">暂无客户数据</td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                          
+                          <div id="generate-invite-view" class="admin-view hidden">
+                              <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                  <h3 class="text-xl font-semibold mb-4">生成邀请码</h3>
+                                  <form id="generate-invite-form" class="space-y-4">
+                                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div>
+                                              <label for="invite-client-name" class="block text-sm font-medium text-gray-700 mb-1">客户姓名 <span class="text-red-500">*</span></label>
+                                              <input type="text" id="invite-client-name" 
+                                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                     placeholder="请输入客户姓名" required>
+                                          </div>
+                                          
+                                          <div>
+                                              <label for="invite-client-phone" class="block text-sm font-medium text-gray-700 mb-1">联系电话 <span class="text-red-500">*</span></label>
+                                              <input type="tel" id="invite-client-phone" 
+                                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                     placeholder="请输入联系电话" required>
+                                          </div>
+                                      </div>
+                                      
+                                      <div>
+                                          <label for="invite-expire-days" class="block text-sm font-medium text-gray-700 mb-1">授权期限 <span class="text-red-500">*</span></label>
+                                          <select id="invite-expire-days" 
+                                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                              <option value="1">1天</option>
+                                              <option value="3">3天</option>
+                                              <option value="30">30天</option>
+                                              <option value="90">90天</option>
+                                              <option value="180">180天</option>
+                                              <option value="365">365天</option>
+                                          </select>
+                                      </div>
+                                      
+                                      <div>
+                                          <label for="invite-notes" class="block text-sm font-medium text-gray-700 mb-1">备注信息</label>
+                                          <textarea id="invite-notes" rows="2" 
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                    placeholder="请输入备注信息（选填）"></textarea>
+                                      </div>
+                                      
+                                      <div class="flex justify-end space-x-3 pt-2">
+                                          <button type="reset" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">重置</button>
+                                          <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600">生成邀请码</button>
+                                      </div>
+                                  </form>
+                              </div>
+                              
+                              <div class="bg-white rounded-lg shadow-lg p-6">
+                                  <div class="flex justify-between items-center mb-4">
+                                      <h3 class="text-xl font-semibold">已生成的邀请码</h3>
+                                      <div class="relative">
+                                          <input type="text" id="invite-codes-search" 
+                                                 class="pl-8 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                 placeholder="搜索邀请码...">
+                                          <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
+                                      </div>
+                                  </div>
+                                  
+                                  <div class="overflow-x-auto">
+                                      <table class="min-w-full divide-y divide-gray-200">
+                                          <thead>
+                                              <tr>
+                                                  <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户姓名</th>
+                                                  <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">联系电话</th>
+                                                  <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">邀请码</th>
+                                                  <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">生成时间</th>
+                                                  <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">授权期限</th>
+                                                  <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                                  <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody id="invite-codes-table-body" class="bg-white divide-y divide-gray-200">
+                                              <!-- 邀请码数据将动态加载 -->
+                                              <tr>
+                                                  <td colspan="7" class="px-4 py-8 text-center text-gray-500">暂无邀请码数据</td>
+                                              </tr>
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                          </div>
+                          
+                          <div id="expiration-reminder-view" class="admin-view hidden">
+                              <div class="bg-white rounded-lg shadow-lg p-6">
+                                  <h3 class="text-xl font-semibold mb-4">到期提醒</h3>
+                                  <p class="text-gray-600 mb-6">以下是即将到期的客户列表，建议及时处理</p>
+                                  
+                                  <!-- 到期提醒列表 -->
+                                  <div id="expiration-reminder-list" class="space-y-4">
+                                      <!-- 到期提醒将动态添加 -->
+                                      <div class="text-center py-8 text-gray-500">
+                                          <i class="fa fa-bell-o text-4xl mb-2"></i>
+                                          <p>暂无即将到期的客户</p>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                          
+                          <div id="system-settings-view" class="admin-view hidden">
+                              <div class="bg-white rounded-lg shadow-lg p-6">
+                                  <h3 class="text-xl font-semibold mb-4">系统设置</h3>
+                                  
+                                  <!-- 管理员密码设置 -->
+                                  <div class="mb-8">
+                                      <h4 class="text-lg font-medium mb-4">管理员密码设置</h4>
+                                      <form id="change-password-form" class="space-y-4">
+                                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                              <div>
+                                                  <label for="current-password" class="block text-sm font-medium text-gray-700 mb-1">当前密码</label>
+                                                  <input type="password" id="current-password" 
+                                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                         placeholder="请输入当前密码" required>
+                                              </div>
+                                              <div>
+                                                  <label for="new-password" class="block text-sm font-medium text-gray-700 mb-1">新密码</label>
+                                                  <input type="password" id="new-password" 
+                                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                         placeholder="请输入新密码" required>
+                                              </div>
+                                              <div class="md:col-span-2">
+                                                  <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">确认新密码</label>
+                                                  <input type="password" id="confirm-password" 
+                                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                         placeholder="请再次输入新密码" required>
+                                              </div>
+                                          </div>
+                                          <div class="flex justify-end">
+                                              <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600">保存密码</button>
+                                          </div>
+                                      </form>
+                                  </div>
+                                  
+                                  <!-- 共振分析密码设置 -->
+                                  <div class="mb-8">
+                                      <h4 class="text-lg font-medium mb-4">共振分析密码设置</h4>
+                                      <form id="change-resonance-password-form" class="space-y-4">
+                                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                              <div>
+                                                  <label for="resonance-new-password" class="block text-sm font-medium text-gray-700 mb-1">新密码</label>
+                                                  <input type="password" id="resonance-new-password" 
+                                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                         placeholder="请输入新密码" required>
+                                              </div>
+                                              <div>
+                                                  <label for="resonance-confirm-password" class="block text-sm font-medium text-gray-700 mb-1">确认新密码</label>
+                                                  <input type="password" id="resonance-confirm-password" 
+                                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                         placeholder="请再次输入新密码" required>
+                                              </div>
+                                          </div>
+                                          <div class="flex justify-end">
+                                              <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600">保存共振分析密码</button>
+                                          </div>
+                                      </form>
+                                  </div>
+                                  
+                                  <!-- 系统信息 -->
+                                  <div class="border-t pt-6">
+                                      <h4 class="text-lg font-medium mb-4">系统信息</h4>
+                                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div class="bg-gray-50 p-4 rounded-md">
+                                              <p class="text-sm text-gray-600">系统名称</p>
+                                              <p class="font-medium">福彩3D智能预测系统</p>
+                                          </div>
+                                          <div class="bg-gray-50 p-4 rounded-md">
+                                              <p class="text-sm text-gray-600">当前版本</p>
+                                              <p class="font-medium">v2.0.0</p>
+                                          </div>
+                                          <div class="bg-gray-50 p-4 rounded-md">
+                                              <p class="text-sm text-gray-600">最后登录时间</p>
+                                              <p class="font-medium">${formatDate(localStorage.getItem('adminLoginTime') ? new Date(parseInt(localStorage.getItem('adminLoginTime'))).toISOString() : '')}</p>
+                                          </div>
+                                          <div class="bg-gray-50 p-4 rounded-md">
+                                              <p class="text-sm text-gray-600">客户总数</p>
+                                              <p class="font-medium">${(JSON.parse(localStorage.getItem('authorizedClients') || '[]').length + JSON.parse(localStorage.getItem('pendingClients') || '[]').length)}</p>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              `;
+              
+              // 创建一个新的容器元素
+              const adminSystemContainer = document.createElement('div');
+              adminSystemContainer.innerHTML = adminSystemHtml;
+              
+              // 清空页面内容，然后添加新的管理员系统
+              document.body.innerHTML = '';
+              document.body.appendChild(adminSystemContainer.firstElementChild);
+              
+              // 初始化管理员系统事件
+              initAdminSystemEvents();
+              
+              // 加载客户数据
+              loadCustomersData();
+          }
+          
+          // 初始化时检查是否已是管理员登录状态
+        if (localStorage.getItem('adminLoggedIn') === 'true') {
+            const syncClientData = async () => {
+                try {
+                    if (typeof syncClientDataOnAdminLogin === 'function') {
+                        await syncClientDataOnAdminLogin();
+                    }
+                } catch (error) {
+                    console.error('同步客户数据失败，但不影响登录:', error);
+                }
+            };
+            
+            syncClientData().then(() => {
+                showAdminSystem();
+            });
+        }
+        
+        // 初始化
+        function initializeApp() {
+            console.log('开始初始化应用...');
+            
+            // 1. 检查mysqlSyncClient
+            checkMysqlSyncClient();
+            
+            // 2. 初始化存储
+            initDataStorage();
+        }
+        
+        // 启动应用初始化
+        initializeApp();
+    </script>
+</body>
+</html>
+
+
+

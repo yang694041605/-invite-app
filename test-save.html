@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试保存预测结果功能</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a56db',
+                        secondary: '#e02424',
+                        accent: '#f59e0b',
+                        dark: '#111827',
+                        light: '#f3f4f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        .btn-primary {
+            background-color: #1a56db;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: rgba(26, 86, 219, 0.9);
+        }
+        .btn-secondary {
+            background-color: #e02424;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(224, 36, 36, 0.9);
+        }
+        .btn-outline {
+            border: 1px solid #d1d5db;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-outline:hover {
+            background-color: #f3f4f6;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .badge {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+        }
+        .badge-success {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .badge-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4">
+    <div class="container mx-auto max-w-4xl">
+        <h1 class="text-2xl font-bold text-center mb-8">测试保存预测结果功能</h1>
+        
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">1. 准备测试数据</h2>
+            <p class="mb-4">点击下方按钮生成测试用的预测结果数据</p>
+            <button id="generate-test-data" class="btn-primary">
+                <i class="fa fa-magic mr-2"></i> 生成测试数据
+            </button>
+            <div id="test-data-status" class="mt-4 hidden">
+                <div class="flex items-center">
+                    <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                    <span>测试数据已生成并保存到localStorage</span>
+                </div>
+                <div class="mt-2 text-sm text-gray-600">
+                    <p>生成的数据:</p>
+                    <pre id="test-data-preview" class="bg-gray-100 p-2 rounded mt-1 overflow-x-auto"></pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">2. 测试保存功能</h2>
+            <p class="mb-4">点击下方按钮测试保存预测结果功能</p>
+            <button id="test-save-function" class="btn-primary">
+                <i class="fa fa-save mr-2"></i> 测试保存功能
+            </button>
+            <div id="save-test-result" class="mt-4 hidden">
+                <div class="flex items-center">
+                    <i id="save-test-icon" class="fa mr-2"></i>
+                    <span id="save-test-message"></span>
+                </div>
+                <div class="mt-2 text-sm text-gray-600" id="save-test-details"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">3. 验证保存结果</h2>
+            <p class="mb-4">点击下方按钮验证保存的预测历史</p>
+            <button id="verify-saved-data" class="btn-primary">
+                <i class="fa fa-check-square-o mr-2"></i> 验证保存结果
+            </button>
+            <div id="verify-result" class="mt-4 hidden">
+                <div class="flex items-center">
+                    <i id="verify-icon" class="fa mr-2"></i>
+                    <span id="verify-message"></span>
+                </div>
+                <div class="mt-2 text-sm text-gray-600">
+                    <p>保存的预测历史:</p>
+                    <pre id="saved-data-preview" class="bg-gray-100 p-2 rounded mt-1 overflow-x-auto"></pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">4. 清除测试数据</h2>
+            <p class="mb-4">点击下方按钮清除测试数据</p>
+            <button id="clear-test-data" class="btn-secondary">
+                <i class="fa fa-trash mr-2"></i> 清除测试数据
+            </button>
+            <div id="clear-status" class="mt-4 hidden">
+                <div class="flex items-center">
+                    <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                    <span>测试数据已清除</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card bg-blue-50">
+            <h2 class="text-xl font-bold mb-4">5. 实际页面测试</h2>
+            <p class="mb-4">点击下方链接前往实际的预测页面进行测试</p>
+            <a href="pages/prediction.html" class="btn-primary inline-flex items-center">
+                <i class="fa fa-external-link mr-2"></i> 前往预测页面
+            </a>
+            <div class="mt-4 text-sm text-gray-600">
+                <p>测试步骤:</p>
+                <ol class="list-decimal list-inside mt-2 space-y-1">
+                    <li>确保已有历史数据（如果没有，请先在数据输入页面添加）</li>
+                    <li>调整权重设置（可选）</li>
+                    <li>点击"开始智能预测"按钮</li>
+                    <li>等待预测完成后，点击"保存预测结果"按钮</li>
+                    <li>查看是否显示保存成功的通知</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="mt-8 text-center text-sm text-gray-500">
+            <p>© 2025 福彩3D智能预测系统 - 测试页面</p>
+        </div>
+    </div>
+
+    <script>
+        // 生成测试数据
+        document.getElementById('generate-test-data').addEventListener('click', function() {
+            // 创建测试用的预测结果
+            const testPrediction = {
+                period: '第100期',
+                time: '2025-07-22 15:30:45',
+                d胆码: [
+                    { number: 3, type: 'hot' },
+                    { number: 7, type: 'warm' },
+                    { number: 5, type: 'hot' }
+                ],
+                d胆码Confidence: 85,
+                fiveNumbers: [3, 7, 5, 2, 8],
+                sevenNumbers: [3, 7, 5, 2, 8, 1, 9],
+                spans: [4, 5, 6],
+                pattern: '组六',
+                patternConfidence: 78,
+                groupSelections: ['357', '352', '358', '372', '378', '572'],
+                directSelections: ['375', '735', '537', '357', '753', '573']
+            };
+            
+            // 保存到localStorage
+            localStorage.setItem('latestPrediction', JSON.stringify(testPrediction));
+            localStorage.setItem('lastPrediction', JSON.stringify(testPrediction));
+            
+            // 显示状态
+            document.getElementById('test-data-status').classList.remove('hidden');
+            document.getElementById('test-data-preview').textContent = JSON.stringify(testPrediction, null, 2);
+            
+            // 重置其他测试结果
+            document.getElementById('save-test-result').classList.add('hidden');
+            document.getElementById('verify-result').classList.add('hidden');
+            document.getElementById('clear-status').classList.add('hidden');
+        });
+        
+        // 测试保存功能
+        document.getElementById('test-save-function').addEventListener('click', function() {
+            // 模拟保存预测结果功能
+            try {
+                console.log('测试保存预测结果功能');
+                
+                // 先尝试从latestPrediction获取（最新的预测结果）
+                let predictionData = localStorage.getItem('latestPrediction');
+                
+                // 如果latestPrediction不存在，尝试从lastPrediction获取
+                if (!predictionData) {
+                    console.log('从latestPrediction获取失败，尝试从lastPrediction获取');
+                    predictionData = localStorage.getItem('lastPrediction');
+                }
+                
+                const resultDiv = document.getElementById('save-test-result');
+                const resultIcon = document.getElementById('save-test-icon');
+                const resultMessage = document.getElementById('save-test-message');
+                const resultDetails = document.getElementById('save-test-details');
+                
+                if (predictionData) {
+                    try {
+                        const prediction = JSON.parse(predictionData);
+                        
+                        // 获取保存的预测历史
+                        let predictionHistory = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+                        
+                        // 添加新的预测结果
+                        predictionHistory.push(prediction);
+                        
+                        // 只保留最近10次预测
+                        if (predictionHistory.length > 10) {
+                            predictionHistory = predictionHistory.slice(-10);
+                        }
+                        
+                        // 保存到本地存储
+                        localStorage.setItem('predictionHistory', JSON.stringify(predictionHistory));
+                        
+                        // 也保存到latestSavedPrediction，方便后续查看
+                        localStorage.setItem('latestSavedPrediction', predictionData);
+                        
+                        console.log('预测结果保存成功');
+                        
+                        // 显示成功结果
+                        resultDiv.classList.remove('hidden');
+                        resultIcon.className = 'fa fa-check-circle text-green-500';
+                        resultMessage.textContent = '保存成功！预测结果已保存到历史记录';
+                        resultDetails.innerHTML = `
+                            <p>保存的期号: ${prediction.period}</p>
+                            <p>保存时间: ${prediction.time}</p>
+                            <p>胆码: ${prediction.d胆码.map(item => item.number).join(', ')}</p>
+                            <p>预测历史记录数: ${predictionHistory.length}</p>
+                        `;
+                    } catch (parseError) {
+                        console.error('解析预测结果时发生错误:', parseError);
+                        
+                        // 显示错误结果
+                        resultDiv.classList.remove('hidden');
+                        resultIcon.className = 'fa fa-times-circle text-red-500';
+                        resultMessage.textContent = '保存失败！解析预测结果时发生错误';
+                        resultDetails.textContent = '错误信息: ' + parseError.message;
+                    }
+                } else {
+                    console.error('没有找到预测结果');
+                    
+                    // 显示错误结果
+                    resultDiv.classList.remove('hidden');
+                    resultIcon.className = 'fa fa-times-circle text-red-500';
+                    resultMessage.textContent = '保存失败！没有找到预测结果';
+                    resultDetails.textContent = '请先点击"生成测试数据"按钮创建测试数据';
+                }
+            } catch (error) {
+                console.error('保存预测结果时发生错误:', error);
+                
+                // 显示错误结果
+                const resultDiv = document.getElementById('save-test-result');
+                const resultIcon = document.getElementById('save-test-icon');
+                const resultMessage = document.getElementById('save-test-message');
+                const resultDetails = document.getElementById('save-test-details');
+                
+                resultDiv.classList.remove('hidden');
+                resultIcon.className = 'fa fa-times-circle text-red-500';
+                resultMessage.textContent = '保存失败！发生未知错误';
+                resultDetails.textContent = '错误信息: ' + error.message;
+            }
+        });
+        
+        // 验证保存结果
+        document.getElementById('verify-saved-data').addEventListener('click', function() {
+            const verifyDiv = document.getElementById('verify-result');
+            const verifyIcon = document.getElementById('verify-icon');
+            const verifyMessage = document.getElementById('verify-message');
+            const savedDataPreview = document.getElementById('saved-data-preview');
+            
+            try {
+                // 获取保存的预测历史
+                const predictionHistory = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+                const latestSaved = localStorage.getItem('latestSavedPrediction');
+                
+                if (predictionHistory.length > 0) {
+                    verifyDiv.classList.remove('hidden');
+                    verifyIcon.className = 'fa fa-check-circle text-green-500';
+                    verifyMessage.textContent = '验证成功！找到保存的预测历史';
+                    savedDataPreview.textContent = JSON.stringify(predictionHistory, null, 2);
+                } else {
+                    verifyDiv.classList.remove('hidden');
+                    verifyIcon.className = 'fa fa-exclamation-circle text-yellow-500';
+                    verifyMessage.textContent = '未找到保存的预测历史';
+                    savedDataPreview.textContent = '预测历史为空，请先测试保存功能';
+                }
+            } catch (error) {
+                verifyDiv.classList.remove('hidden');
+                verifyIcon.className = 'fa fa-times-circle text-red-500';
+                verifyMessage.textContent = '验证失败！解析数据时发生错误';
+                savedDataPreview.textContent = '错误信息: ' + error.message;
+            }
+        });
+        
+        // 清除测试数据
+        document.getElementById('clear-test-data').addEventListener('click', function() {
+            // 清除测试数据
+            localStorage.removeItem('latestPrediction');
+            localStorage.removeItem('lastPrediction');
+            localStorage.removeItem('predictionHistory');
+            localStorage.removeItem('latestSavedPrediction');
+            
+            // 显示状态
+            document.getElementById('clear-status').classList.remove('hidden');
+            
+            // 重置其他测试结果
+            document.getElementById('test-data-status').classList.add('hidden');
+            document.getElementById('save-test-result').classList.add('hidden');
+            document.getElementById('verify-result').classList.add('hidden');
+        });
+        
+        // 页面加载时检查是否有测试数据
+        document.addEventListener('DOMContentLoaded', function() {
+            const hasTestData = localStorage.getItem('latestPrediction') || localStorage.getItem('lastPrediction');
+            if (hasTestData) {
+                document.getElementById('test-data-status').classList.remove('hidden');
+                document.getElementById('test-data-preview').textContent = '已存在测试数据';
+            }
+        });
+    </script>
+</body>
+</html>

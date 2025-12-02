@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>福彩3D智能预测系统 - 测试页面</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36BFFA',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                        'gray-100': '#F7F8FA',
+                        'gray-200': '#E5E6EB',
+                        'gray-300': '#C9CDD4',
+                        'gray-400': '#86909C',
+                        'gray-500': '#4E5969',
+                        'gray-600': '#272E3B',
+                        'gray-700': '#1D2129',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        card: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'card-hover': '0 8px 16px rgba(0, 0, 0, 0.1)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #165DFF 0%, #36BFFA 100%);
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">福彩3D智能预测系统</h1>
+            <p class="text-gray-600">测试页面 - 验证预测功能是否正常工作</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-card p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">测试智能预测功能</h2>
+            
+            <div class="mb-6">
+                <button id="testPredictionBtn" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all-300 flex items-center justify-center">
+                    <i class="fa fa-magic mr-2"></i> 开始智能预测
+                </button>
+            </div>
+            
+            <div id="loading" class="hidden">
+                <div class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                    <span class="ml-3 text-gray-600">正在进行智能预测，请稍候...</span>
+                </div>
+            </div>
+            
+            <div id="result" class="hidden">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">预测结果</h3>
+                    <div id="predictionResult" class="p-4 bg-gray-50 rounded-lg"></div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">详细分析</h3>
+                    <div id="analysisResult" class="p-4 bg-gray-50 rounded-lg"></div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">控制台输出</h3>
+                    <div id="consoleOutput" class="p-4 bg-gray-900 text-gray-100 rounded-lg h-40 overflow-y-auto font-mono text-sm"></div>
+                </div>
+            </div>
+            
+            <div id="error" class="hidden">
+                <div class="p-4 bg-red-50 text-red-600 rounded-lg">
+                    <p class="font-medium">预测过程中发生错误：</p>
+                    <p id="errorMessage" class="mt-1"></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-card p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">测试数据</h2>
+            <p class="text-gray-600 mb-4">本测试页面使用模拟的历史开奖数据来测试预测功能。</p>
+            
+            <div class="mb-4">
+                <h3 class="text-lg font-medium text-gray-800 mb-2">模拟历史数据</h3>
+                <div id="simulatedData" class="p-4 bg-gray-50 rounded-lg max-h-40 overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟历史开奖数据
+        const simulatedLotteryData = [
+            { issue: '2023001', numbers: [1, 2, 3], date: '2023-01-01' },
+            { issue: '2023002', numbers: [4, 5, 6], date: '2023-01-02' },
+            { issue: '2023003', numbers: [7, 8, 9], date: '2023-01-03' },
+            { issue: '2023004', numbers: [0, 1, 2], date: '2023-01-04' },
+            { issue: '2023005', numbers: [3, 4, 5], date: '2023-01-05' },
+            { issue: '2023006', numbers: [6, 7, 8], date: '2023-01-06' },
+            { issue: '2023007', numbers: [9, 0, 1], date: '2023-01-07' },
+            { issue: '2023008', numbers: [2, 3, 4], date: '2023-01-08' },
+            { issue: '2023009', numbers: [5, 6, 7], date: '2023-01-09' },
+            { issue: '2023010', numbers: [8, 9, 0], date: '2023-01-10' },
+            { issue: '2023011', numbers: [1, 3, 5], date: '2023-01-11' },
+            { issue: '2023012', numbers: [2, 4, 6], date: '2023-01-12' },
+            { issue: '2023013', numbers: [7, 9, 1], date: '2023-01-13' },
+            { issue: '2023014', numbers: [3, 5, 7], date: '2023-01-14' },
+            { issue: '2023015', numbers: [0, 2, 4], date: '2023-01-15' },
+            { issue: '2023016', numbers: [5, 8, 1], date: '2023-01-16' },
+            { issue: '2023017', numbers: [3, 6, 9], date: '2023-01-17' },
+            { issue: '2023018', numbers: [2, 5, 8], date: '2023-01-18' },
+            { issue: '2023019', numbers: [1, 4, 7], date: '2023-01-19' },
+            { issue: '2023020', numbers: [0, 3, 6], date: '2023-01-20' },
+            { issue: '2023021', numbers: [9, 2, 5], date: '2023-01-21' },
+            { issue: '2023022', numbers: [8, 1, 4], date: '2023-01-22' },
+            { issue: '2023023', numbers: [7, 0, 3], date: '2023-01-23' },
+            { issue: '2023024', numbers: [6, 9, 2], date: '2023-01-24' },
+            { issue: '2023025', numbers: [5, 8, 1], date: '2023-01-25' },
+            { issue: '2023026', numbers: [4, 7, 0], date: '2023-01-26' },
+            { issue: '2023027', numbers: [3, 6, 9], date: '2023-01-27' },
+            { issue: '2023028', numbers: [2, 5, 8], date: '2023-01-28' },
+            { issue: '2023029', numbers: [1, 4, 7], date: '2023-01-29' },
+            { issue: '2023030', numbers: [0, 3, 6], date: '2023-01-30' },
+        ];
+
+        // 显示模拟数据
+        document.addEventListener('DOMContentLoaded', function() {
+            const simulatedDataElement = document.getElementById('simulatedData');
+            simulatedDataElement.innerHTML = simulatedLotteryData.map(item => 
+                `<div class="flex justify-between items-center py-1 border-b border-gray-200">
+                    <span class="font-mono">${item.issue}</span>
+                    <span class="flex space-x-2">
+                        <span class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded">${item.numbers[0]}</span>
+                        <span class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded">${item.numbers[1]}</span>
+                        <span class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded">${item.numbers[2]}</span>
+                    </span>
+                    <span>${item.date}</span>
+                </div>`
+            ).join('');
+
+            // 重写console.log以便在页面上显示
+            const originalConsoleLog = console.log;
+            console.log = function(message) {
+                originalConsoleLog.apply(console, arguments);
+                
+                const consoleOutput = document.getElementById('consoleOutput');
+                if (typeof message === 'object') {
+                    try {
+                        message = JSON.stringify(message, null, 2);
+                    } catch (e) {
+                        message = message.toString();
+                    }
+                }
+                consoleOutput.innerHTML += `<div class="mb-1">${message}</div>`;
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            };
+        });
+
+        // 工具函数
+        function countNumbers(draws) {
+            const counts = Array(10).fill(0);
+            draws.forEach(draw => {
+                draw.numbers.forEach(num => counts[num]++);
+            });
+            return counts;
+        }
+
+        function getTopNumbers(counts, limit) {
+            return counts
+                .map((count, index) => ({ number: index, count }))
+                .sort((a, b) => b.count - a.count || a.number - b.number)
+                .slice(0, limit)
+                .map(item => item.number);
+        }
+
+        function getBottomNumbers(counts, limit) {
+            return counts
+                .map((count, index) => ({ number: index, count }))
+                .sort((a, b) => a.count - b.count || a.number - b.number)
+                .slice(0, limit)
+                .map(item => item.number);
+        }
+
+        function getWarmNumbers(lotteryData, period, count) {
+            if (lotteryData.length < period + 1) {
+                return [];
+            }
+            
+            const recentDraws = lotteryData.slice(-period);
+            const previousDraws = lotteryData.slice(-period * 2, -period);
+            
+            const recentCounts = countNumbers(recentDraws);
+            const previousCounts = countNumbers(previousDraws);
+            
+            const increaseRatios = recentCounts.map((count, index) => {
+                const prevCount = previousCounts[index] || 1; // 避免除以0
+                return {
+                    number: index,
+                    ratio: count / prevCount,
+                    recentCount: count,
+                    previousCount: previousCounts[index] || 0
+                };
+            });
+            
+            // 筛选出近期出现次数增加的号码，且近期至少出现1次
+            const warmCandidates = increaseRatios.filter(item => 
+                item.ratio > 1.2 && item.recentCount > 0
+            );
+            
+            // 按增长比例排序，取前N个
+            return warmCandidates
+                .sort((a, b) => b.ratio - a.ratio || b.recentCount - a.recentCount)
+                .slice(0, count)
+                .map(item => item.number);
+        }
+
+        function calculateWeightedScores(hotNumbers, coldNumbers, warmNumbers) {
+            return Array(10).fill(0).map((_, index) => {
+                let score = 0;
+                
+                // 热号权重
+                const hotIndex = hotNumbers.indexOf(index);
+                if (hotIndex !== -1) {
+                    score += (hotNumbers.length - hotIndex) * 3;
+                }
+                
+                // 冷号权重（负分）
+                const coldIndex = coldNumbers.indexOf(index);
+                if (coldIndex !== -1) {
+                    score -= (coldNumbers.length - coldIndex) * 2;
+                }
+                
+                // 渐热号权重
+                const warmIndex = warmNumbers.indexOf(index);
+                if (warmIndex !== -1) {
+                    score += (warmNumbers.length - warmIndex) * 4;
+                }
+                
+                return { number: index, score };
+            });
+        }
+
+        // 传统分析方法（用于数据不足时）
+        function analyzeWithTraditionalMethod(lotteryData) {
+            // 统计每个号码的出现次数
+            const numberCounts = Array(10).fill(0);
+            
+            lotteryData.forEach(item => {
+                item.numbers.forEach(number => {
+                    numberCounts[number]++;
+                });
+            });
+            
+            // 生成热号榜（出现频率最高的3个号码）
+            const hotNumbers = [...numberCounts]
+                .map((count, index) => ({ number: index, count }))
+                .sort((a, b) => b.count - a.count || a.number - b.number)
+                .slice(0, 3)
+                .map(item => ({
+                    number: item.number,
+                    frequency: item.count,
+                    percentage: ((item.count / (lotteryData.length * 3)) * 100).toFixed(1),
+                    score: item.count * 2
+                }));
+            
+            // 生成冷号榜（出现频率最低的2个号码）
+            const coldNumbers = [...numberCounts]
+                .map((count, index) => ({ number: index, count }))
+                .sort((a, b) => a.count - b.count || a.number - b.number)
+                .slice(0, 2)
+                .map(item => ({
+                    number: item.number,
+                    frequency: item.count,
+                    percentage: ((item.count / (lotteryData.length * 3)) * 100).toFixed(1),
+                    score: item.count
+                }));
+            
+            // 渐热号（这里简化处理，实际应该有更复杂的算法）
+            const warmNumbers = [];
+            
+            return {
+                hotNumbers,
+                coldNumbers,
+                warmNumbers
+            };
+        }
+
+        // 智能分析方法
+        function analyzeNumberTrends(lotteryData, strategySettings) {
+            console.log('开始号码趋势分析');
+            console.log('数据量:', lotteryData.length);
+            console.log('策略设置:', strategySettings);
+            
+            // 使用传入的策略设置或使用默认值
+            const settings = strategySettings || {
+                hot: { period: 5, count: 3 },
+                cold: { period: 10, count: 2 },
+                warm: { period: 10, count: 2 },
+                span: { period: 20, count: 4 }
+            };
+            
+            // 确保有足够的数据进行分析
+            const totalDraws = lotteryData.length;
+            if (totalDraws < 5) {
+                // 数据不足5期，使用传统方法
+                console.log('数据不足5期，使用传统方法');
+                return analyzeWithTraditionalMethod(lotteryData);
+            }
+            
+            // 1. 从历史开奖数据中分别列出榜单
+            const drawsHot = lotteryData.slice(-Math.min(settings.hot.period, totalDraws));
+            const drawsCold = lotteryData.slice(-Math.min(settings.cold.period, totalDraws));
+            const drawsWarm = lotteryData.slice(-Math.min(settings.warm.period, totalDraws));
+            
+            console.log(`热号分析期数: ${drawsHot.length}, 冷号分析期数: ${drawsCold.length}, 渐热号分析期数: ${drawsWarm.length}`);
+            
+            // 统计不同时期的号码出现次数
+            const countsHot = countNumbers(drawsHot);
+            const countsCold = countNumbers(drawsCold);
+            const countsWarm = countNumbers(drawsWarm);
+            
+            console.log('热号统计:', countsHot);
+            console.log('冷号统计:', countsCold);
+            console.log('渐热号统计:', countsWarm);
+            
+            // 2. 生成热号榜（根据策略设置的数量）
+            const hotNumbersList = getTopNumbers(countsHot, settings.hot.count);
+            
+            // 3. 生成冷号榜（根据策略设置的数量）
+            const coldNumbersList = getBottomNumbers(countsCold, settings.cold.count);
+            
+            // 4. 生成渐热号榜（根据策略设置的期数和数量）
+            const warmNumbersList = getWarmNumbers(lotteryData, settings.warm.period, settings.warm.count);
+            
+            console.log('热号榜:', hotNumbersList);
+            console.log('冷号榜:', coldNumbersList);
+            console.log('渐热号榜:', warmNumbersList);
+            
+            // 统计所有号码的出现频率（用于20期数据）
+            const draws20 = lotteryData.slice(-Math.min(20, totalDraws));
+            const counts20 = countNumbers(draws20);
+            
+            // 4. 赋予权重分数并计算总分
+            const numberScores = calculateWeightedScores(hotNumbersList, coldNumbersList, warmNumbersList);
+            
+            console.log('号码得分:', numberScores);
+            
+            // 5. 按总分排序
+            const sortedNumbers = [...numberScores].sort((a, b) => b.score - a.score);
+            
+            console.log('按得分排序:', sortedNumbers);
+            
+            // 6. 划分热号、冷号、渐热号
+            const hotNumbers = sortedNumbers.slice(0, settings.hot.count).map(item => ({
+                number: item.number,
+                frequency: counts20[item.number],
+                percentage: ((counts20[item.number] / (draws20.length * 3)) * 100).toFixed(1),
+                score: item.score
+            }));
+            
+            const coldNumbers = sortedNumbers.slice(-settings.cold.count).map(item => ({
+                number: item.number,
+                frequency: counts20[item.number],
+                percentage: ((counts20[item.number] / (draws20.length * 3)) * 100).toFixed(1),
+                score: item.score
+            }));
+            
+            // 渐热号已经通过专门的方法计算
+            const formattedWarmNumbers = warmNumbersList.map(number => ({
+                number: number,
+                frequency: counts20[number],
+                percentage: ((counts20[number] / (draws20.length * 3)) * 100).toFixed(1),
+                score: numberScores.find(item => item.number === number)?.score || 0
+            }));
+            
+            console.log('最终热号:', hotNumbers);
+            console.log('最终冷号:', coldNumbers);
+            console.log('最终渐热号:', formattedWarmNumbers);
+            
+            return {
+                hotNumbers,
+                coldNumbers,
+                warmNumbers: formattedWarmNumbers
+            };
+        }
+
+        // 分析跨度分布
+        function analyzeSpanDistribution(lotteryData, strategySettings) {
+            console.log('开始跨度分布分析');
+            
+            // 使用传入的策略设置或使用默认值
+            const settings = strategySettings || {
+                span: { period: 20, count: 4 }
+            };
+            
+            // 确保有足够的数据进行分析
+            const totalDraws = lotteryData.length;
+            if (totalDraws < 5) {
+                return [];
+            }
+            
+            // 从历史开奖数据中获取最近的N期
+            const recentDraws = lotteryData.slice(-Math.min(settings.span.period, totalDraws));
+            
+            // 计算每期的跨度
+            const spans = recentDraws.map(draw => {
+                const sorted = [...draw.numbers].sort((a, b) => a - b);
+                return sorted[2] - sorted[0];
+            });
+            
+            // 统计每个跨度的出现次数
+            const spanCounts = Array(10).fill(0); // 跨度范围是0-9
+            spans.forEach(span => spanCounts[span]++);
+            
+            console.log('跨度统计:', spanCounts);
+            
+            // 生成热门跨度榜（出现频率最高的4个跨度）
+            const hotSpans = [...spanCounts]
+                .map((count, index) => ({ span: index, count }))
+                .sort((a, b) => b.count - a.count || a.span - b.span)
+                .slice(0, settings.span.count)
+                .map(item => ({
+                    span: item.span,
+                    frequency: item.count,
+                    percentage: ((item.count / recentDraws.length) * 100).toFixed(1)
+                }));
+            
+            console.log('热门跨度:', hotSpans);
+            
+            return hotSpans;
+        }
+
+        // 智能推荐号码
+        function generateRecommendations(lotteryData, strategySettings) {
+            console.log('开始生成智能推荐号码');
+            
+            try {
+                // 分析号码趋势
+                const numberAnalysis = analyzeNumberTrends(lotteryData, strategySettings);
+                
+                // 分析跨度分布
+                const spanAnalysis = analyzeSpanDistribution(lotteryData, strategySettings);
+                
+                // 提取可能的号码
+                const hotNumbers = numberAnalysis.hotNumbers.map(item => item.number);
+                const warmNumbers = numberAnalysis.warmNumbers.map(item => item.number);
+                
+                console.log('热号:', hotNumbers);
+                console.log('渐热号:', warmNumbers);
+                
+                // 合并号码池（去重）
+                const numberPool = [...new Set([...hotNumbers, ...warmNumbers])];
+                
+                console.log('号码池:', numberPool);
+                
+                // 如果号码池不足6个，补充一些其他号码
+                if (numberPool.length < 6) {
+                    const allNumbers = Array.from({length: 10}, (_, i) => i);
+                    const remainingNumbers = allNumbers.filter(num => !numberPool.includes(num));
+                    
+                    // 按出现频率排序，取前几个补充
+                    const draws20 = lotteryData.slice(-Math.min(20, lotteryData.length));
+                    const counts20 = countNumbers(draws20);
+                    
+                    remainingNumbers.sort((a, b) => counts20[b] - counts20[a]);
+                    
+                    numberPool.push(...remainingNumbers.slice(0, 6 - numberPool.length));
+                }
+                
+                console.log('补充后的号码池:', numberPool);
+                
+                // 如果号码池还是不足3个，无法生成推荐
+                if (numberPool.length < 3) {
+                    console.log('号码池不足，无法生成推荐');
+                    return {
+                        recommendedNumbers: [],
+                        analysis: numberAnalysis,
+                        spans: spanAnalysis
+                    };
+                }
+                
+                // 生成推荐号码组合
+                const recommendedNumbers = [];
+                
+                // 方法1：热号组合
+                if (hotNumbers.length >= 3) {
+                    recommendedNumbers.push(hotNumbers.slice(0, 3));
+                }
+                
+                // 方法2：热号+渐热号组合
+                if (hotNumbers.length >= 2 && warmNumbers.length >= 1) {
+                    recommendedNumbers.push([...hotNumbers.slice(0, 2), warmNumbers[0]]);
+                }
+                
+                // 方法3：热号+其他号码组合
+                if (hotNumbers.length >= 1 && numberPool.length >= 3) {
+                    const otherNumbers = numberPool.filter(num => !hotNumbers.includes(num));
+                    if (otherNumbers.length >= 2) {
+                        recommendedNumbers.push([hotNumbers[0], ...otherNumbers.slice(0, 2)]);
+                    }
+                }
+                
+                // 方法4：随机组合（确保不重复）
+                while (recommendedNumbers.length < 5) {
+                    // 从号码池中随机选择3个不重复的号码
+                    const combination = [];
+                    const tempPool = [...numberPool];
+                    
+                    while (combination.length < 3 && tempPool.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * tempPool.length);
+                        combination.push(tempPool.splice(randomIndex, 1)[0]);
+                    }
+                    
+                    // 检查组合是否已存在
+                    const isDuplicate = recommendedNumbers.some(
+                        combo => combo.sort().join(',') === combination.sort().join(',')
+                    );
+                    
+                    if (!isDuplicate && combination.length === 3) {
+                        recommendedNumbers.push(combination);
+                    }
+                    
+                    // 防止无限循环
+                    if (recommendedNumbers.length > 10) break;
+                }
+                
+                console.log('推荐号码组合:', recommendedNumbers);
+                
+                return {
+                    recommendedNumbers,
+                    analysis: numberAnalysis,
+                    spans: spanAnalysis
+                };
+            } catch (error) {
+                console.error('生成推荐号码时发生错误:', error);
+                throw error;
+            }
+        }
+
+        // 测试预测功能
+        document.getElementById('testPredictionBtn').addEventListener('click', function() {
+            // 显示加载状态
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('consoleOutput').innerHTML = '';
+            
+            // 模拟网络延迟
+            setTimeout(function() {
+                try {
+                    // 执行智能预测
+                    const result = generateRecommendations(simulatedLotteryData);
+                    
+                    // 隐藏加载状态，显示结果
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('result').classList.remove('hidden');
+                    
+                    // 显示预测结果
+                    const predictionResultElement = document.getElementById('predictionResult');
+                    predictionResultElement.innerHTML = `
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-800 mb-2">推荐号码组合</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                ${result.recommendedNumbers.map((combo, index) => `
+                                    <div class="flex items-center space-x-2 p-2 bg-white rounded border border-gray-200">
+                                        <span class="text-sm text-gray-500">${index + 1}.</span>
+                                        ${combo.map(num => `
+                                            <span class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded">${num}</span>
+                                        `).join('')}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 显示详细分析
+                    const analysisResultElement = document.getElementById('analysisResult');
+                    analysisResultElement.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">热号分析</h4>
+                                <div class="space-y-2">
+                                    ${result.analysis.hotNumbers.map(item => `
+                                        <div class="flex justify-between items-center">
+                                            <span class="w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 rounded">${item.number}</span>
+                                            <div class="flex-1 mx-2">
+                                                <div class="h-2 bg-gray-200 rounded-full">
+                                                    <div class="h-2 bg-red-500 rounded-full" style="width: ${item.percentage}%"></div>
+                                                </div>
+                                            </div>
+                                            <span class="text-sm text-gray-600">${item.percentage}%</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">冷号分析</h4>
+                                <div class="space-y-2">
+                                    ${result.analysis.coldNumbers.map(item => `
+                                        <div class="flex justify-between items-center">
+                                            <span class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded">${item.number}</span>
+                                            <div class="flex-1 mx-2">
+                                                <div class="h-2 bg-gray-200 rounded-full">
+                                                    <div class="h-2 bg-blue-500 rounded-full" style="width: ${item.percentage}%"></div>
+                                                </div>
+                                            </div>
+                                            <span class="text-sm text-gray-600">${item.percentage}%</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">渐热号分析</h4>
+                                <div class="space-y-2">
+                                    ${result.analysis.warmNumbers.map(item => `
+                                        <div class="flex justify-between items-center">
+                                            <span class="w-8 h-8 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded">${item.number}</span>
+                                            <div class="flex-1 mx-2">
+                                                <div class="h-2 bg-gray-200 rounded-full">
+                                                    <div class="h-2 bg-yellow-500 rounded-full" style="width: ${item.percentage}%"></div>
+                                                </div>
+                                            </div>
+                                            <span class="text-sm text-gray-600">${item.percentage}%</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h4 class="font-medium text-gray-800 mb-2">跨度分析</h4>
+                            <div class="flex flex-wrap gap-2">
+                                ${result.spans.map(item => `
+                                    <div class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm flex items-center">
+                                        <span>跨度 ${item.span}</span>
+                                        <span class="ml-1 text-xs">(${item.percentage}%)</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                } catch (error) {
+                    // 隐藏加载状态，显示错误
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('error').classList.remove('hidden');
+                    document.getElementById('errorMessage').textContent = error.message;
+                    console.error('预测过程中发生错误:', error);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

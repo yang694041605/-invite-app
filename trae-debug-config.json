@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "name": "福彩3D智能推理系统",
+  "description": "基于腾讯云开发的福彩3D智能推理系统",
+  "environment": {
+    "type": "tencent-cloudbase",
+    "envId": "my-app-fucai-4gcaw7hv5d0274cb",
+    "envName": "my-app-fucai",
+    "region": "ap-shanghai",
+    "debugMode": true,
+    "localStoragePrefix": "fucai3d_"
+  },
+  "debug": {
+    "enable": true,
+    "logLevel": "debug",
+    "showConsoleLogs": true,
+    "showNetworkLogs": true,
+    "showStorageLogs": true
+  },
+  "server": {
+    "port": 8000,
+    "host": "localhost",
+    "https": false,
+    "openBrowser": true
+  },
+  "files": {
+    "mainEntry": "index.html",
+    "loginPage": "login.html",
+    "staticDirs": [".", "resonance-analysis", "pages"],
+    "ignoreFiles": [
+      "node_modules",
+      ".git",
+      ".gitignore",
+      "cloudbaserc.json",
+      "trae-debug-config.json"
+    ]
+  },
+  "features": {
+    "enablePWA": true,
+    "enableLocalStorage": true,
+    "enableChartJS": true,
+    "enableTailwindCSS": true,
+    "enableFontAwesome": true
+  },
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "debug": "python -m http.server 8000",
+    "deploy": "cloudbase hosting deploy -e my-app-fucai-4gcaw7hv5d0274cb"
+  }
+}

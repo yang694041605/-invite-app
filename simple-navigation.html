@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>福彩3D智能预测系统 - 简化版</title>
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* 导航栏样式 */
+        header {
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .nav-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        /* 桌面端导航 */
+        .desktop-nav {
+            display: flex;
+            space-x: 1rem;
+        }
+        
+        .desktop-nav a {
+            text-decoration: none;
+            padding: 0.5rem 0.8rem;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .desktop-nav a:hover {
+            color: #1a56db;
+        }
+        
+        .desktop-nav a.active {
+            color: #1a56db;
+            font-weight: 500;
+            border-bottom-color: #1a56db;
+        }
+        
+        /* 移动端菜单按钮 */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        /* 移动端导航 */
+        .mobile-nav {
+            display: none;
+            padding: 1rem 0;
+        }
+        
+        .mobile-nav.active {
+            display: block;
+        }
+        
+        .mobile-nav a {
+            display: block;
+            text-decoration: none;
+            padding: 0.8rem 0;
+            color: #666;
+            border-left: 3px solid transparent;
+            padding-left: 0.5rem;
+        }
+        
+        .mobile-nav a:hover {
+            color: #1a56db;
+        }
+        
+        .mobile-nav a.active {
+            color: #1a56db;
+            font-weight: 500;
+            border-left-color: #1a56db;
+        }
+        
+        /* 主内容样式 */
+        main {
+            padding: 2rem 0;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .content-section h2 {
+            color: #1a56db;
+            margin-bottom: 1rem;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .desktop-nav {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo">福彩3D智能预测系统</div>
+                
+                <!-- 桌面端导航 -->
+                <nav class="desktop-nav">
+                    <a href="./index.html" class="nav-item" data-page="home">首页</a>
+                    <a href="./pages/data-input.html" class="nav-item" data-page="data-input">数据输入</a>
+                    <a href="./pages/prediction.html" class="nav-item" data-page="prediction">智能预测</a>
+                    <a href="./resonance-analysis/index.html" class="nav-item" data-page="resonance">共振分析</a>
+                    <a href="./pages/result.html" class="nav-item" data-page="history">历史分析</a>
+                    <a href="./pages/review.html" class="nav-item" data-page="review">复盘分析</a>
+                    <a href="./pages/model.html" class="nav-item" data-page="model">模型优化</a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    ☰
+                </button>
+            </div>
+            
+            <!-- 移动端导航 -->
+            <nav class="mobile-nav" id="mobileNav">
+                <a href="./index.html" class="nav-item" data-page="home">首页</a>
+                <a href="./pages/data-input.html" class="nav-item" data-page="data-input">数据输入</a>
+                <a href="./pages/prediction.html" class="nav-item" data-page="prediction">智能预测</a>
+                <a href="./resonance-analysis/index.html" class="nav-item" data-page="resonance">共振分析</a>
+                <a href="./pages/result.html" class="nav-item" data-page="history">历史分析</a>
+                <a href="./pages/review.html" class="nav-item" data-page="review">复盘分析</a>
+                <a href="./pages/model.html" class="nav-item" data-page="model">模型优化</a>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- 主内容 -->
+    <main class="container">
+        <section class="hero">
+            <h1>福彩3D智能推理系统</h1>
+            <p>智能推理，科学选号</p>
+        </section>
+        
+        <section class="content-section">
+            <h2>导航栏测试</h2>
+            <p>此页面用于测试导航栏功能。导航栏已经修复，所有链接都指向正确的页面路径。</p>
+            <p>导航项包括：首页、数据输入、智能预测、共振分析、历史分析、复盘分析和模型优化。</p>
+            <p>点击上方导航链接可以跳转到相应的页面。</p>
+        </section>
+    </main>
+    
+    <script>
+        // 导航高亮功能 - 简化版，更可靠
+        function highlightNavigation() {
+            try {
+                // 获取当前文件名作为页面标识
+                const pathname = window.location.pathname || '';
+                const filename = pathname.split('/').pop() || 'index.html';
+                
+                // 确定当前页面ID
+                let currentPage = 'home'; // 默认首页
+                
+                if (filename.includes('data-input')) {
+                    currentPage = 'data-input';
+                } else if (filename.includes('prediction')) {
+                    currentPage = 'prediction';
+                } else if (filename.includes('resonance') || pathname.includes('resonance')) {
+                    currentPage = 'resonance';
+                } else if (filename.includes('result')) {
+                    currentPage = 'history';
+                } else if (filename.includes('review')) {
+                    currentPage = 'review';
+                } else if (filename.includes('model')) {
+                    currentPage = 'model';
+                }
+                
+                // 移除所有导航项的高亮
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // 为对应页面的导航项添加高亮
+                const activeItems = document.querySelectorAll('.nav-item[data-page="' + currentPage + '"]');
+                if (activeItems.length > 0) {
+                    activeItems.forEach(item => {
+                        item.classList.add('active');
+                    });
+                }
+            } catch (e) {
+                console.log('导航高亮初始化失败，不影响基本功能');
+            }
+        }
+        
+        // 移动端菜单切换 - 增强版
+        try {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    const mobileNav = document.getElementById('mobileNav');
+                    if (mobileNav) {
+                        mobileNav.classList.toggle('active');
+                    }
+                });
+            }
+        } catch (e) {
+            console.log('移动端菜单初始化失败');
+        }
+        
+        // 页面加载完成后初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', highlightNavigation);
+        } else {
+            // 延迟执行以确保DOM完全加载
+            setTimeout(highlightNavigation, 100);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简化版共振分析 - 福彩3D智能预测系统</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <style type="text/css">
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4">
+            <h1 class="text-2xl font-bold text-center">简化版共振分析</h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">页面加载测试</h2>
+            <p class="mb-4">这是一个简化版的共振分析页面，用于测试页面加载问题。</p>
+            
+            <div class="bg-green-50 p-4 rounded-lg mb-6">
+                <p class="text-green-700"><i class="fa fa-check-circle mr-2"></i> 页面已成功加载！</p>
+                <p class="text-gray-600 mt-2">如果您看到此消息，说明基本的HTML结构和CSS样式可以正常加载。</p>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="font-bold mb-2">测试按钮</h3>
+                <button id="test-button" class="btn-primary">
+                    <i class="fa fa-play mr-2"></i> 测试按钮点击
+                </button>
+                <div id="button-result" class="mt-2 hidden"></div>
+            </div>
+            
+            <div>
+                <h3 class="font-bold mb-2">测试图表</h3>
+                <div class="h-64">
+                    <canvas id="test-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">localStorage数据检查</h2>
+            <button id="check-storage" class="btn-primary">
+                <i class="fa fa-database mr-2"></i> 检查localStorage数据
+            </button>
+            <div id="storage-result" class="mt-4 p-4 bg-gray-50 rounded-lg max-h-60 overflow-y-auto hidden"></div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-100 py-6 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-600">
+            <p>© 2025 福彩3D智能预测系统 - 简化版测试页面</p>
+        </div>
+    </footer>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面DOM已加载完成');
+            
+            // 测试按钮点击事件
+            document.getElementById('test-button').addEventListener('click', function() {
+                const resultDiv = document.getElementById('button-result');
+                resultDiv.innerHTML = '<div class="bg-blue-50 p-3 rounded-lg"><i class="fa fa-info-circle text-blue-500 mr-2"></i> 按钮点击成功！JavaScript事件处理正常。</div>';
+                resultDiv.classList.remove('hidden');
+            });
+            
+            // 初始化测试图表
+            initTestChart();
+            
+            // 检查localStorage按钮
+            document.getElementById('check-storage').addEventListener('click', function() {
+                checkLocalStorage();
+            });
+        });
+        
+        // 初始化测试图表
+        function initTestChart() {
+            const ctx = document.getElementById('test-chart');
+            
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+                        datasets: [{
+                            label: '测试数据',
+                            data: [3, 1, 4, 1, 5, 9, 2, 6, 5, 3],
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('图表canvas元素未找到');
+            }
+        }
+        
+        // 检查localStorage
+        function checkLocalStorage() {
+            const resultDiv = document.getElementById('storage-result');
+            
+            try {
+                const lotteryData = localStorage.getItem('lotteryData');
+                
+                if (lotteryData) {
+                    const parsedData = JSON.parse(lotteryData);
+                    resultDiv.innerHTML = `
+                        <div class="mb-2">
+                            <span class="font-bold">localStorage状态：</span>
+                            <span class="text-green-600">数据存在</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="font-bold">数据长度：</span>
+                            ${parsedData.length}期
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <p>最近一期数据：</p>
+                            <pre class="mt-1 p-2 bg-white rounded">${JSON.stringify(parsedData[parsedData.length - 1], null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="mb-2">
+                            <span class="font-bold">localStorage状态：</span>
+                            <span class="text-yellow-600">未找到lotteryData数据</span>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <p>请先在测试工具页面添加测试数据。</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="mb-2">
+                        <span class="font-bold">错误：</span>
+                        <span class="text-red-600">${error.message}</span>
+                    </div>
+                `;
+            }
+            
+            resultDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

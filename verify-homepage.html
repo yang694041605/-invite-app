@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>验证首页 - 客户登录界面已清除</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 统一的 Tailwindwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a56db',
+                        secondary: '#e02424',
+                        accent: '#f59e0b',
+                        dark: '#111827',
+                        light: '#f3f4f6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .transition-all-300 {
+            transition: all 300ms ease-in-out;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .btn-primary {
+            background-color: #1a56db;
+            color: white;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            font-weight: 500;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: rgba(26, 86, 219, 0.9);
+        }
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .check-item i {
+            color: #10b981;
+            margin-top: 0.25rem;
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+        .check-item-content {
+            flex: 1;
+        }
+        .check-item-title {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        .check-item-desc {
+            color: #4b5563;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <div class="card text-center">
+            <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa fa-check text-white text-2xl"></i>
+            </div>
+            
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">操作完成</h1>
+            <p class="text-gray-600 mb-8">客户登录界面已成功清除，系统首页已更新。</p>
+            
+            <!-- 清除内容列表 -->
+            <div class="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                <h3 class="font-bold text-gray-800 mb-4">已清除的内容：</h3>
+                <div class="space-y-4">
+                    <div class="check-item">
+                        <i class="fa fa-check-circle"></i>
+                        <div class="check-item-content">
+                            <div class="check-item-title">客户登录弹窗</div>
+                            <div class="check-item-desc">删除了客户登录窗口的HTML代码，包括登录表单和相关元素</div>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <i class="fa fa-check-circle"></i>
+                        <div class="check-item-content">
+                            <div class="check-item-title">导航菜单客户登录选项</div>
+                            <div class="check-item-desc">移除了导航菜单中的客户登录选项，只保留管理员登录入口</div>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <i class="fa fa-check-circle"></i>
+                        <div class="check-item-content">
+                            <div class="check-item-title">客户登录相关JavaScript代码</div>
+                            <div class="check-item-desc">删除了所有与客户登录相关的JavaScript函数和事件处理代码</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 保留功能列表 -->
+            <div class="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                <h3 class="font-bold text-gray-800 mb-4">不受影响的功能：</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center">
+                        <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-gray-700">管理员登录功能</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-gray-700">权限管理模块</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-gray-700">客户授权码生成</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-gray-700">数据输入模块</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-gray-700">智能预测功能</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-gray-700">历史分析功能</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- 打开首页按钮 -->
+                <a href="index.html" class="btn-primary w-full">
+                    <i class="fa fa-home mr-2"></i> 访问更新后的首页
+                </a>
+                
+                <!-- 管理员登录测试 -->
+                <a href="test-admin-login.html" class="bg-gray-100 text-gray-800 font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center text-lg w-full hover:bg-gray-200">
+                    <i class="fa fa-user-secret mr-2"></i> 管理员登录测试
+                </a>
+                
+                <!-- 使用指南 -->
+                <a href="admin-guide.html" class="bg-gray-100 text-gray-800 font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center text-lg w-full hover:bg-gray-200">
+                    <i class="fa fa-book mr-2"></i> 查看使用指南
+                </a>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-gray-100 text-sm text-gray-500">
+                <p>© 2025 福彩3D智能预测系统</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

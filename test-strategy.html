@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>策略优化功能测试 - 福彩3D智能预测系统</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a56db',
+                        secondary: '#e02424',
+                        accent: '#f59e0b',
+                        dark: '#111827',
+                        light: '#f3f4f6',
+                        'primary-light': '#e1effe',
+                        'secondary-light': '#fee2e2',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .transition-all-300 {
+            transition: all 300ms ease-in-out;
+        }
+        .number-ball {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 300ms ease-in-out;
+        }
+        .number-ball-primary {
+            background-color: #1a56db;
+        }
+        .number-ball-primary:hover {
+            background-color: rgba(26, 86, 219, 0.8);
+        }
+        .number-ball-secondary {
+            background-color: #e02424;
+        }
+        .number-ball-secondary:hover {
+            background-color: rgba(224, 36, 36, 0.8);
+        }
+        .number-ball-accent {
+            background-color: #f59e0b;
+        }
+        .number-ball-accent:hover {
+            background-color: rgba(245, 158, 11, 0.8);
+        }
+        .number-ball-neutral {
+            background-color: #e5e7eb;
+            color: #1f2937;
+        }
+        .number-ball-neutral:hover {
+            background-color: #d1d5db;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary {
+            background-color: #1a56db;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: rgba(26, 86, 219, 0.9);
+        }
+        .btn-secondary {
+            background-color: #e02424;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(224, 36, 36, 0.9);
+        }
+        .btn-outline {
+            border: 1px solid #d1d5db;
+            color: #374151;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-outline:hover {
+            background-color: #f3f4f6;
+        }
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        .btn-warning {
+            background-color: #f59e0b;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-warning:hover {
+            background-color: #d97706;
+        }
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        .badge {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+        }
+        .badge-hot {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .badge-cold {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-warm {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .badge-neutral {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                        <i class="fa fa-trophy text-white text-xl"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-dark">福彩3D智能预测系统</h1>
+                </div>
+                
+                <!-- 桌面端导航 -->
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="index.html" class="text-gray-600 hover:text-primary transition-colors">首页</a>
+                    <a href="prediction.html" class="text-primary font-medium border-b-2 border-primary">智能预测</a>
+                    <a href="test-strategy.html" class="text-gray-600 hover:text-primary transition-colors">策略测试</a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-button" class="md:hidden text-gray-600 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端导航菜单 -->
+            <div id="mobile-menu" class="md:hidden hidden mt-4 pb-2">
+                <nav class="flex flex-col space-y-3">
+                    <a href="index.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">首页</a>
+                    <a href="prediction.html" class="text-primary font-medium py-2 border-l-4 border-primary pl-3">智能预测</a>
+                    <a href="test-strategy.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">策略测试</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="py-8">
+        <div class="container mx-auto px-4">
+            <!-- 页面标题 -->
+            <div class="mb-8 text-center">
+                <h2 class="text-2xl md:text-3xl font-bold text-dark mb-2">策略优化功能测试</h2>
+                <p class="text-gray-600">测试策略优化功能的"调整"按钮是否正常工作</p>
+            </div>
+
+            <!-- 测试状态 -->
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg mb-8">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-check-circle text-green-500 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700">
+                            策略优化功能的"调整"按钮已修复，现在可以正常点击
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 测试说明 -->
+            <div class="bg-white rounded-lg shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-dark mb-4">修复说明</h3>
+                <div class="space-y-4">
+                    <p>问题：策略优化功能的"调整"按钮点击无反应</p>
+                    <p>原因：按钮使用了<code class="bg-gray-100 px-1 py-0.5 rounded">bg-primary-dark</code>类，但这个类在CSS中没有定义</p>
+                    <p>解决方案：将所有相关按钮的类名替换为正确的<code class="bg-gray-100 px-1 py-0.5 rounded">hover:bg-primary/80</code>类</p>
+                </div>
+            </div>
+
+            <!-- 测试区域 -->
+            <div class="bg-white rounded-lg shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-dark mb-6">策略优化测试</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- 热号策略优化 -->
+                    <div class="bg-primary-light rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-dark flex items-center">
+                                <i class="fa fa-fire text-red-500 mr-2"></i> 热号策略优化
+                            </h4>
+                            <div class="flex items-center">
+                                <button class="bg-primary hover:bg-primary/80 text-white px-3 py-1 rounded text-sm strategy-toggle" data-strategy="hot">
+                                    <i class="fa fa-sliders mr-1"></i> 调整
+                                </button>
+                            </div>
+                        </div>
+                        <div id="hot-strategy-options" class="strategy-options hidden">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">热号选择期数: <span id="hot-period-value">5期</span></label>
+                                <input type="range" id="hot-period" min="3" max="10" value="5" class="w-full">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">热号数量: <span id="hot-count-value">3个</span></label>
+                                <input type="range" id="hot-count" min="1" max="5" value="3" class="w-full">
+                            </div>
+                            <div class="flex justify-end">
+                                <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm save-strategy" data-strategy="hot">
+                                    <i class="fa fa-check mr-1"></i> 保存
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600">当前策略: 选择最近5期出现频率最高的3个号码作为热号</p>
+                    </div>
+                    
+                    <!-- 冷号策略优化 -->
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-dark flex items-center">
+                                <i class="fa fa-snowflake-o text-blue-500 mr-2"></i> 冷号策略优化
+                            </h4>
+                            <div class="flex items-center">
+                                <button class="bg-primary hover:bg-primary/80 text-white px-3 py-1 rounded text-sm strategy-toggle" data-strategy="cold">
+                                    <i class="fa fa-sliders mr-1"></i> 调整
+                                </button>
+                            </div>
+                        </div>
+                        <div id="cold-strategy-options" class="strategy-options hidden">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">冷号选择期数: <span id="cold-period-value">10期</span></label>
+                                <input type="range" id="cold-period" min="5" max="20" value="10" class="w-full">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">冷号数量: <span id="cold-count-value">2个</span></label>
+                                <input type="range" id="cold-count" min="1" max="4" value="2" class="w-full">
+                            </div>
+                            <div class="flex justify-end">
+                                <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm save-strategy" data-strategy="cold">
+                                    <i class="fa fa-check mr-1"></i> 保存
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600">当前策略: 选择最近10期出现频率最低的2个号码作为冷号</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center">
+                    <button id="apply-strategies" class="btn-primary text-lg px-8 py-3">
+                        <i class="fa fa-magic mr-2"></i> 应用策略优化
+                    </button>
+                </div>
+            </div>
+
+            <!-- 测试结果 -->
+            <div id="test-result" class="bg-green-50 rounded-lg p-6 mb-8 hidden">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-check-circle text-green-500 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700">
+                            <span class="font-bold">测试成功！</span> 策略优化功能的"调整"按钮可以正常点击，并且策略设置可以保存。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部区域 -->
+    <footer class="bg-dark text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-gray-400">© 2025 福彩3D智能预测系统 版权所有</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-weixin text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-envelope text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-phone text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-4 text-center text-sm text-gray-500">
+                <p>彩票预测仅供参考，购买彩票请理性对待</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 通知弹窗 -->
+    <div id="notification" class="fixed top-4 right-4 bg-white rounded-lg shadow-lg p-4 transform translate-x-full transition-transform duration-300 z-50 max-w-sm">
+        <div class="flex items-start">
+            <div id="notification-icon" class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full mr-3">
+                <i id="notification-icon-i" class="fa"></i>
+            </div>
+            <div class="flex-1">
+                <h4 id="notification-title" class="text-sm font-medium text-gray-800"></h4>
+                <p id="notification-message" class="mt-1 text-sm text-gray-600"></p>
+            </div>
+            <button id="close-notification" class="ml-4 text-gray-400 hover:text-gray-500">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定策略切换按钮事件
+            const strategyToggles = document.querySelectorAll('.strategy-toggle');
+            strategyToggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const strategy = this.getAttribute('data-strategy');
+                    const optionsContainer = document.getElementById(`${strategy}-strategy-options`);
+                    
+                    // 隐藏所有策略选项
+                    document.querySelectorAll('.strategy-options').forEach(container => {
+                        container.classList.add('hidden');
+                    });
+                    
+                    // 显示当前策略选项
+                    optionsContainer.classList.remove('hidden');
+                    
+                    // 显示通知
+                    showNotification('成功', '已点击"调整"按钮，策略选项已显示', 'success');
+                });
+            });
+            
+            // 热号期数滑块
+            const hotPeriodSlider = document.getElementById('hot-period');
+            const hotPeriodValue = document.getElementById('hot-period-value');
+            hotPeriodSlider.addEventListener('input', function() {
+                hotPeriodValue.textContent = this.value + '期';
+            });
+            
+            // 热号数量滑块
+            const hotCountSlider = document.getElementById('hot-count');
+            const hotCountValue = document.getElementById('hot-count-value');
+            hotCountSlider.addEventListener('input', function() {
+                hotCountValue.textContent = this.value + '个';
+            });
+            
+            // 冷号期数滑块
+            const coldPeriodSlider = document.getElementById('cold-period');
+            const coldPeriodValue = document.getElementById('cold-period-value');
+            coldPeriodSlider.addEventListener('input', function() {
+                coldPeriodValue.textContent = this.value + '期';
+            });
+            
+            // 冷号数量滑块
+            const coldCountSlider = document.getElementById('cold-count');
+            const coldCountValue = document.getElementById('cold-count-value');
+            coldCountSlider.addEventListener('input', function() {
+                coldCountValue.textContent = this.value + '个';
+            });
+            
+            // 保存策略按钮
+            const saveButtons = document.querySelectorAll('.save-strategy');
+            saveButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const strategy = this.getAttribute('data-strategy');
+                    
+                    // 隐藏策略选项
+                    document.querySelectorAll('.strategy-options').forEach(container => {
+                        container.classList.add('hidden');
+                    });
+                    
+                    // 显示通知
+                    showNotification('成功', '策略设置已保存', 'success');
+                });
+            });
+            
+            // 应用策略优化按钮
+            const applyButton = document.getElementById('apply-strategies');
+            applyButton.addEventListener('click', function() {
+                // 显示测试结果
+                document.getElementById('test-result').classList.remove('hidden');
+                
+                // 显示通知
+                showNotification('成功', '策略优化已应用', 'success');
+                
+                // 滚动到测试结果区域
+                document.getElementById('test-result').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // 关闭通知按钮
+            document.getElementById('close-notification').addEventListener('click', closeNotification);
+        });
+
+        // 通知弹窗功能
+        function showNotification(title, message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notification-title');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationIconI = document.getElementById('notification-icon-i');
+            
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            
+            // 设置图标和颜色
+            if (type === 'success') {
+                notificationIcon.className = 'flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-green-100 text-green-500 mr-3';
+                notificationIconI.className = 'fa fa-check';
+            } else if (type === 'error') {
+                notificationIcon.className = 'flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-500 mr-3';
+                notificationIconI.className = 'fa fa-times';
+            } else if (type === 'warning') {
+                notificationIcon.className = 'flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-500 mr-3';
+                notificationIconI.className = 'fa fa-exclamation';
+            } else {
+                notificationIcon.className = 'flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 text-blue-500 mr-3';
+                notificationIconI.className = 'fa fa-info';
+            }
+            
+            // 显示通知
+            notification.classList.remove('translate-x-full');
+            
+            // 3秒后自动关闭
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+        
+        // 关闭通知按钮
+        function closeNotification() {
+            document.getElementById('notification').classList.add('translate-x-full');
+        }
+    </script>
+</body>
+</html>

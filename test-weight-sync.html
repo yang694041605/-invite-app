@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权重同步测试 - 福彩3D智能预测系统</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a56db',
+                        secondary: '#e02424',
+                        accent: '#f59e0b',
+                        dark: '#111827',
+                        light: '#f3f4f6',
+                        'primary-light': '#e1effe',
+                        'secondary-light': '#fee2e2',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .transition-all-300 {
+            transition: all 300ms ease-in-out;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary {
+            background-color: #1a56db;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: rgba(26, 86, 219, 0.9);
+        }
+        .btn-secondary {
+            background-color: #e02424;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(224, 36, 36, 0.9);
+        }
+        .btn-outline {
+            border: 1px solid #d1d5db;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-outline:hover {
+            background-color: #f3f4f6;
+        }
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        .badge {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+        }
+        .badge-success {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .badge-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .badge-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                        <i class="fa fa-trophy text-white text-xl"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-dark">福彩3D智能预测系统</h1>
+                </div>
+                
+                <!-- 桌面端导航 -->
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="index.html" class="text-gray-600 hover:text-primary transition-colors">首页</a>
+                    <a href="pages/prediction.html" class="text-gray-600 hover:text-primary transition-colors">智能预测</a>
+                    <a href="pages/model.html" class="text-gray-600 hover:text-primary transition-colors">模型优化</a>
+                    <a href="test-weight-sync.html" class="text-primary font-medium border-b-2 border-primary">权重同步测试</a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-button" class="md:hidden text-gray-600 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端导航菜单 -->
+            <div id="mobile-menu" class="md:hidden hidden mt-4 pb-2">
+                <nav class="flex flex-col space-y-3">
+                    <a href="index.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">首页</a>
+                    <a href="pages/prediction.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">智能预测</a>
+                    <a href="pages/model.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">模型优化</a>
+                    <a href="test-weight-sync.html" class="text-primary font-medium py-2 border-l-4 border-primary pl-3">权重同步测试</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="py-8">
+        <div class="container mx-auto px-4">
+            <!-- 页面标题 -->
+            <div class="mb-8 text-center">
+                <h2 class="text-2xl md:text-3xl font-bold text-dark mb-2">权重同步测试</h2>
+                <p class="text-gray-600">测试模型优化板块与智能预测板块的权重同步功能</p>
+            </div>
+
+            <!-- 测试控制面板 -->
+            <div class="bg-white rounded-lg shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-dark mb-6">测试控制</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <!-- 模型优化板块权重 -->
+                    <div class="bg-primary-light rounded-xl p-6">
+                        <h4 class="font-bold text-dark mb-4">模型优化板块权重</h4>
+                        
+                        <div class="space-y-6">
+                            <!-- 热号权重 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">热号权重:</span>
+                                    <span id="model-hot-weight-value" class="text-sm font-medium">30%</span>
+                                </div>
+                                <input type="range" id="model-hot-weight" min="0" max="100" value="30" class="w-full">
+                            </div>
+                            
+                            <!-- 冷号权重 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">冷号权重:</span>
+                                    <span id="model-cold-weight-value" class="text-sm font-medium">20%</span>
+                                </div>
+                                <input type="range" id="model-cold-weight" min="0" max="100" value="20" class="w-full">
+                            </div>
+                            
+                            <!-- 渐热号权重 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">渐热号权重:</span>
+                                    <span id="model-warm-weight-value" class="text-sm font-medium">25%</span>
+                                </div>
+                                <input type="range" id="model-warm-weight" min="0" max="100" value="25" class="w-full">
+                            </div>
+                            
+                            <!-- 跨度权重 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">跨度权重:</span>
+                                    <span id="model-span-weight-value" class="text-sm font-medium">15%</span>
+                                </div>
+                                <input type="range" id="model-span-weight" min="0" max="100" value="15" class="w-full">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex justify-center">
+                            <button id="save-model-weights" class="btn-primary">
+                                <i class="fa fa-save mr-2"></i> 保存模型权重
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 智能预测板块权重 -->
+                    <div class="bg-blue-50 rounded-xl p-6">
+                        <h4 class="font-bold text-dark mb-4">智能预测板块权重</h4>
+                        
+                        <div class="space-y-6">
+                            <!-- 热号权重 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">热号权重:</span>
+                                    <span id="prediction-hot-weight-value" class="text-sm font-medium">30%</span>
+                                </div>
+                                <input type="range" id="prediction-hot-weight" min="0" max="100" value="30" class="w-full">
+                            </div>
+                            
+                            <!-- 冷号权重 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">冷号权重:</span>
+                                    <span id="prediction-cold-weight-value" class="text-sm font-medium">20%</span>
+                                </div>
+                                <input type="range" id="prediction-cold-weight" min="0" max="100" value="20" class="w-full">
+                            </div>
+                            
+                            <!-- 渐热号权重 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">渐热号权重:</span>
+                                    <span id="prediction-warm-weight-value" class="text-sm font-medium">25%</span>
+                                </div>
+                                <input type="range" id="prediction-warm-weight" min="0" max="100" value="25" class="w-full">
+                            </div>
+                            
+                            <!-- 跨度权重 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">跨度权重:</span>
+                                    <span id="prediction-span-weight-value" class="text-sm font-medium">15%</span>
+                                </div>
+                                <input type="range" id="prediction-span-weight" min="0" max="100" value="15" class="w-full">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex justify-center">
+                            <button id="load-prediction-weights" class="btn-primary">
+                                <i class="fa fa-refresh mr-2"></i> 加载预测权重
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 测试按钮 -->
+                <div class="flex flex-col md:flex-row justify-center gap-4">
+                    <button id="test-sync" class="btn-success">
+                        <i class="fa fa-check-circle mr-2"></i> 测试权重同步
+                    </button>
+                    <button id="reset-weights" class="btn-outline">
+                        <i class="fa fa-refresh mr-2"></i> 重置权重
+                    </button>
+                    <button id="go-to-model-page" class="btn-primary">
+                        <i class="fa fa-arrow-right mr-2"></i> 前往模型优化页面
+                    </button>
+                    <button id="go-to-prediction-page" class="btn-primary">
+                        <i class="fa fa-arrow-right mr-2"></i> 前往智能预测页面
+                    </button>
+                </div>
+            </div>
+
+            <!-- 测试结果 -->
+            <div id="test-result" class="bg-white rounded-lg shadow-card p-6 mb-8 hidden">
+                <h3 class="text-xl font-bold text-dark mb-6">测试结果</h3>
+                
+                <div id="test-result-content" class="space-y-4">
+                    <!-- 测试结果将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 权重同步说明 -->
+            <div class="bg-white rounded-lg shadow-card p-6">
+                <h3 class="text-xl font-bold text-dark mb-4">权重同步说明</h3>
+                
+                <div class="space-y-4 text-gray-700">
+                    <p>1. 模型优化板块中的权重设置会同步到智能预测板块中的预测控制部分</p>
+                    <p>2. 同步的权重包括：热号权重、冷号权重、渐热号权重、跨度权重</p>
+                    <p>3. 权重同步通过localStorage实现，使用"predictionWeights"键存储</p>
+                    <p>4. 在模型优化页面保存模型设置或加载历史模型时，会自动同步权重到智能预测板块</p>
+                    <p>5. 智能预测页面加载时会自动读取保存的权重设置</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部区域 -->
+    <footer class="bg-dark text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-gray-400">&copy; 2025 福彩3D智能预测系统 版权所有</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-weixin text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-weibo text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 通知弹窗 -->
+    <div id="notification" class="fixed top-4 right-4 bg-white rounded-lg shadow-lg p-4 transform translate-x-full transition-transform duration-300 z-50 max-w-sm">
+        <div class="flex items-start">
+            <div id="notification-icon" class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 text-blue-500 mr-3">
+                <i id="notification-icon-i" class="fa fa-info"></i>
+            </div>
+            <div class="flex-1">
+                <h3 id="notification-title" class="font-bold text-dark">通知标题</h3>
+                <p id="notification-message" class="text-sm text-gray-600 mt-1">通知内容</p>
+            </div>
+            <button id="close-notification" class="text-gray-400 hover:text-gray-600 ml-4">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定移动端菜单按钮事件
+            document.getElementById('mobile-menu-button').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobile-menu');
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // 绑定滑块事件
+            bindSliderEvents();
+            
+            // 绑定按钮事件
+            bindButtonEvents();
+            
+            // 绑定通知关闭按钮事件
+            document.getElementById('close-notification').addEventListener('click', closeNotification);
+        });
+        
+        // 绑定滑块事件
+        function bindSliderEvents() {
+            // 模型优化板块滑块
+            document.getElementById('model-hot-weight').addEventListener('input', function() {
+                document.getElementById('model-hot-weight-value').textContent = this.value + '%';
+            });
+            
+            document.getElementById('model-cold-weight').addEventListener('input', function() {
+                document.getElementById('model-cold-weight-value').textContent = this.value + '%';
+            });
+            
+            document.getElementById('model-warm-weight').addEventListener('input', function() {
+                document.getElementById('model-warm-weight-value').textContent = this.value + '%';
+            });
+            
+            document.getElementById('model-span-weight').addEventListener('input', function() {
+                document.getElementById('model-span-weight-value').textContent = this.value + '%';
+            });
+            
+            // 智能预测板块滑块
+            document.getElementById('prediction-hot-weight').addEventListener('input', function() {
+                document.getElementById('prediction-hot-weight-value').textContent = this.value + '%';
+            });
+            
+            document.getElementById('prediction-cold-weight').addEventListener('input', function() {
+                document.getElementById('prediction-cold-weight-value').textContent = this.value + '%';
+            });
+            
+            document.getElementById('prediction-warm-weight').addEventListener('input', function() {
+                document.getElementById('prediction-warm-weight-value').textContent = this.value + '%';
+            });
+            
+            document.getElementById('prediction-span-weight').addEventListener('input', function() {
+                document.getElementById('prediction-span-weight-value').textContent = this.value + '%';
+            });
+        }
+        
+        // 绑定按钮事件
+        function bindButtonEvents() {
+            // 保存模型权重按钮
+            document.getElementById('save-model-weights').addEventListener('click', function() {
+                const modelWeights = {
+                    hotNumberWeight: parseInt(document.getElementById('model-hot-weight').value),
+                    coldNumberWeight: parseInt(document.getElementById('model-cold-weight').value),
+                    warmNumberWeight: parseInt(document.getElementById('model-warm-weight').value),
+                    spanWeight: parseInt(document.getElementById('model-span-weight').value)
+                };
+                
+                // 保存到localStorage
+                localStorage.setItem('predictionWeights', JSON.stringify(modelWeights));
+                
+                showNotification('成功', '模型权重已保存到localStorage', 'success');
+            });
+            
+            // 加载预测权重按钮
+            document.getElementById('load-prediction-weights').addEventListener('click', function() {
+                const savedWeights = JSON.parse(localStorage.getItem('predictionWeights') || '{}');
+                
+                if (savedWeights.hotNumberWeight !== undefined) {
+                    document.getElementById('prediction-hot-weight').value = savedWeights.hotNumberWeight;
+                    document.getElementById('prediction-hot-weight-value').textContent = savedWeights.hotNumberWeight + '%';
+                }
+                
+                if (savedWeights.coldNumberWeight !== undefined) {
+                    document.getElementById('prediction-cold-weight').value = savedWeights.coldNumberWeight;
+                    document.getElementById('prediction-cold-weight-value').textContent = savedWeights.coldNumberWeight + '%';
+                }
+                
+                if (savedWeights.warmNumberWeight !== undefined) {
+                    document.getElementById('prediction-warm-weight').value = savedWeights.warmNumberWeight;
+                    document.getElementById('prediction-warm-weight-value').textContent = savedWeights.warmNumberWeight + '%';
+                }
+                
+                if (savedWeights.spanWeight !== undefined) {
+                    document.getElementById('prediction-span-weight').value = savedWeights.spanWeight;
+                    document.getElementById('prediction-span-weight-value').textContent = savedWeights.spanWeight + '%';
+                }
+                
+                showNotification('成功', '已从localStorage加载预测权重', 'success');
+            });
+            
+            // 测试权重同步按钮
+            document.getElementById('test-sync').addEventListener('click', function() {
+                testWeightSync();
+            });
+            
+            // 重置权重按钮
+            document.getElementById('reset-weights').addEventListener('click', function() {
+                resetWeights();
+            });
+            
+            // 前往模型优化页面按钮
+            document.getElementById('go-to-model-page').addEventListener('click', function() {
+                window.location.href = 'pages/model.html';
+            });
+            
+            // 前往智能预测页面按钮
+            document.getElementById('go-to-prediction-page').addEventListener('click', function() {
+                window.location.href = 'pages/prediction.html';
+            });
+        }
+        
+        // 测试权重同步
+        function testWeightSync() {
+            // 获取模型权重
+            const modelWeights = {
+                hotNumberWeight: parseInt(document.getElementById('model-hot-weight').value),
+                coldNumberWeight: parseInt(document.getElementById('model-cold-weight').value),
+                warmNumberWeight: parseInt(document.getElementById('model-warm-weight').value),
+                spanWeight: parseInt(document.getElementById('model-span-weight').value)
+            };
+            
+            // 保存到localStorage
+            localStorage.setItem('predictionWeights', JSON.stringify(modelWeights));
+            
+            // 模拟智能预测页面加载权重
+            const savedWeights = JSON.parse(localStorage.getItem('predictionWeights') || '{}');
+            
+            // 更新预测权重显示
+            document.getElementById('prediction-hot-weight').value = savedWeights.hotNumberWeight;
+            document.getElementById('prediction-hot-weight-value').textContent = savedWeights.hotNumberWeight + '%';
+            
+            document.getElementById('prediction-cold-weight').value = savedWeights.coldNumberWeight;
+            document.getElementById('prediction-cold-weight-value').textContent = savedWeights.coldNumberWeight + '%';
+            
+            document.getElementById('prediction-warm-weight').value = savedWeights.warmNumberWeight;
+            document.getElementById('prediction-warm-weight-value').textContent = savedWeights.warmNumberWeight + '%';
+            
+            document.getElementById('prediction-span-weight').value = savedWeights.spanWeight;
+            document.getElementById('prediction-span-weight-value').textContent = savedWeights.spanWeight + '%';
+            
+            // 显示测试结果
+            const testResult = document.getElementById('test-result');
+            const testResultContent = document.getElementById('test-result-content');
+            
+            testResult.classList.remove('hidden');
+            
+            // 检查权重是否一致
+            let isSyncSuccess = true;
+            
+            if (parseInt(document.getElementById('model-hot-weight').value) !== parseInt(document.getElementById('prediction-hot-weight').value)) {
+                isSyncSuccess = false;
+            }
+            
+            if (parseInt(document.getElementById('model-cold-weight').value) !== parseInt(document.getElementById('prediction-cold-weight').value)) {
+                isSyncSuccess = false;
+            }
+            
+            if (parseInt(document.getElementById('model-warm-weight').value) !== parseInt(document.getElementById('prediction-warm-weight').value)) {
+                isSyncSuccess = false;
+            }
+            
+            if (parseInt(document.getElementById('model-span-weight').value) !== parseInt(document.getElementById('prediction-span-weight').value)) {
+                isSyncSuccess = false;
+            }
+            
+            // 生成测试结果内容
+            if (isSyncSuccess) {
+                testResultContent.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="fa fa-check-circle text-green-500 text-xl mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="font-bold text-dark">权重同步测试成功</h4>
+                            <p class="text-gray-700 mt-2">模型优化板块的权重已成功同步到智能预测板块</p>
+                            <div class="mt-4 space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">热号权重:</span>
+                                    <span class="font-medium">${modelWeights.hotNumberWeight}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">冷号权重:</span>
+                                    <span class="font-medium">${modelWeights.coldNumberWeight}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">渐热号权重:</span>
+                                    <span class="font-medium">${modelWeights.warmNumberWeight}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">跨度权重:</span>
+                                    <span class="font-medium">${modelWeights.spanWeight}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                testResultContent.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="fa fa-times-circle text-red-500 text-xl mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="font-bold text-dark">权重同步测试失败</h4>
+                            <p class="text-gray-700 mt-2">模型优化板块的权重未能成功同步到智能预测板块</p>
+                            <p class="text-gray-700 mt-2">请检查localStorage是否正常工作，以及权重是否正确保存</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 显示通知
+            if (isSyncSuccess) {
+                showNotification('成功', '权重同步测试成功', 'success');
+            } else {
+                showNotification('错误', '权重同步测试失败', 'error');
+            }
+        }
+        
+        // 重置权重
+        function resetWeights() {
+            // 重置模型权重
+            document.getElementById('model-hot-weight').value = 30;
+            document.getElementById('model-hot-weight-value').textContent = '30%';
+            
+            document.getElementById('model-cold-weight').value = 20;
+            document.getElementById('model-cold-weight-value').textContent = '20%';
+            
+            document.getElementById('model-warm-weight').value = 25;
+            document.getElementById('model-warm-weight-value').textContent = '25%';
+            
+            document.getElementById('model-span-weight').value = 15;
+            document.getElementById('model-span-weight-value').textContent = '15%';
+            
+            // 重置预测权重
+            document.getElementById('prediction-hot-weight').value = 30;
+            document.getElementById('prediction-hot-weight-value').textContent = '30%';
+            
+            document.getElementById('prediction-cold-weight').value = 20;
+            document.getElementById('prediction-cold-weight-value').textContent = '20%';
+            
+            document.getElementById('prediction-warm-weight').value = 25;
+            document.getElementById('prediction-warm-weight-value').textContent = '25%';
+            
+            document.getElementById('prediction-span-weight').value = 15;
+            document.getElementById('prediction-span-weight-value').textContent = '15%';
+            
+            // 清除localStorage中的权重设置
+            localStorage.removeItem('predictionWeights');
+            
+            // 隐藏测试结果
+            document.getElementById('test-result').classList.add('hidden');
+            
+            showNotification('成功', '权重已重置为默认值', 'success');
+        }
+        
+        // 显示通知弹窗
+        function showNotification(title, message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notification-title');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationIconI = document.getElementById('notification-icon-i');
+            
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            
+            // 设置图标和颜色
+            if (type === 'success') {
+                notificationIcon.className = 'flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-green-100 text-green-500 mr-3';
+                notificationIconI.className = 'fa fa-check';
+            } else if (type === 'error') {
+                notificationIcon.className = 'flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-500 mr-3';
+                notificationIconI.className = 'fa fa-times';
+            } else if (type === 'warning') {
+                notificationIcon.className = 'flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-500 mr-3';
+                notificationIconI.className = 'fa fa-exclamation';
+            } else {
+                notificationIcon.className = 'flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 text-blue-500 mr-3';
+                notificationIconI.className = 'fa fa-info';
+            }
+            
+            // 显示通知
+            notification.classList.remove('translate-x-full');
+            
+            // 3秒后自动关闭
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+        
+        // 关闭通知按钮
+        function closeNotification() {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.classList.add('translate-x-full');
+            }
+        }
+    </script>
+</body>
+</html>

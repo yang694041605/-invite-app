@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>福彩3D智能预测系统 - 独立预览</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- 统一的 Tailwindwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a56db',
+                        secondary: '#e02424',
+                        accent: '#f59e0b',
+                        dark: '#111827',
+                        light: '#f3f4f6',
+                        'primary-light': '#e1effe',
+                        'secondary-light': '#fee2e2',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/css">
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .transition-all-300 {
+            transition: all 300ms ease-in-out;
+        }
+        .number-ball {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 300ms ease-in-out;
+        }
+        .number-ball-primary {
+            background-color: #1a56db;
+        }
+        .number-ball-primary:hover {
+            background-color: rgba(26, 86, 219, 0.8);
+        }
+        .number-ball-secondary {
+            background-color: #e02424;
+        }
+        .number-ball-secondary:hover {
+            background-color: rgba(224, 36, 36, 0.8);
+        }
+        .number-ball-accent {
+            background-color: #f59e0b;
+        }
+        .number-ball-accent:hover {
+            background-color: rgba(245, 158, 11, 0.8);
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            transition: all 300ms ease-in-out;
+        }
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary {
+            background-color: #1a56db;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: rgba(26, 86, 219, 0.9);
+        }
+        .btn-secondary {
+            background-color: #e02424;
+            color: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(224, 36, 36, 0.9);
+        }
+        .btn-outline {
+            border: 1px solid #d1d5db;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease-in-out;
+        }
+        .btn-outline:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-amber-50 to-orange-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between-between items-center items-center">
+                <div class="flex items-center"></div>
+                
+                <!-- 桌面端导航 -->
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="index.html" class="nav-item text-primary font-medium border-b-2 border-primary" data-page="home">首页</a>
+                    <a href="pages/data-input.html" class="nav-item text-gray-600 hover:text-primary transition-colors" data-page="data-input">数据输入</a>
+                    <a href="pages/prediction.html" class="nav-item text-gray-600 hover:text-primary transition-colors" data-page="prediction">智能预测</a>
+                    <a href="resonance-analysis/index.html" class="nav-item text-gray-600 hover:text-primary transition-colors" data-page="resonance">共振分析</a>
+                    <a href="pages/result.html" class="nav-item text-gray-600 hover:text-primary transition-colors" data-page="history">历史分析</a>
+                    <a href="pages/review.html" class="nav-item text-gray-600 hover:text-primary transition-colors" data-page="review">复盘分析</a>
+                    <a href="pages/model.html" class="nav-item text-gray-600 hover:text-primary transition-colors" data-page="model">模型优化</a>
+                    <a href="pages/creation.html" class="nav-item text-gray-600 hover:text-primary transition-colors" data-page="creation">内容创作</a>
+                    <a href="pages/optimization.html" class="nav-item text-gray-600 hover:text-primary transition-colors" data-page="optimization">程序优化升级</a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-button" class="md:hidden text-gray-600 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端导航菜单 -->
+                <div id="mobile-menu" class="md:hidden hidden mt-4 pb-2">
+                    <nav class="flex flex-col space-y-3">
+                        <a href="index.html" class="text-primary font-medium py-2 border-l-4 border-primary pl-3">首页</a>
+                        <a href="pages/data-input.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">数据输入</a>
+                        <a href="pages/prediction.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">智能预测</a>
+                        <a href="resonance-analysis/index.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">共振分析</a>
+                        <a href="pages/result.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">历史分析</a>
+                        <a href="pages/review.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">复盘分析</a>
+                        <a href="pages/model.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">模型优化</a>
+                        <a href="pages/creation.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">内容创作</a>
+                        <a href="pages/optimization.html" class="text-gray-600 hover:text-primary transition-colors py-2 pl-3">程序优化升级</a>
+                    </nav>
+                </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main>
+        <!-- 英雄区域 -->
+        <section class="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-12 md:py-20">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="md:w-1/2 mb-8 md:mb-0 text-center">
+                        <h1 class="text-5xl md:text-8xl font-bold mb-2 text-white drop-shadow-lg" style="font-size: 48px;">福彩3D智能推理系统</h1>
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4 text-shadow">智能推理，科学选号</h2>
+                        <p class="text-lg md:text-xl mb-6 opacity-90">基于先进的数据分析算法，为您提供精准的福彩3D号码推理，助您中得大奖！</p>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="#" class="bg-white text-primary font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:shadow-lg flex items-center">
+                                <i class="fa fa-play-circle mr-2"></i> 查看预测
+                            </a>
+                            <a href="#" class="bg-white/20 backdrop-blur-sm text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:bg-white/30 flex items-center">
+                                <i class="fa fa-plus-circle mr-2"></i> 数据输入
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 预测结果展示 -->
+        <section class="py-12 md:py-16 bg-amber-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-center mb-12 text-dark">最新推理结果</h2>
+                
+                <!-- 数据同步控制按钮 -->
+                <div class="flex justify-center mb-6">
+                    <button id="refresh-prediction" class="btn-outline mr-3 flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 刷新数据
+                    </button>
+                    <button id="view-full-prediction" class="btn-primary flex items-center">
+                        <i class="fa fa-eye mr-2"></i> 查看完整预测
+                    </button>
+                </div>
+                
+                <div id="prediction-container" class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <!-- 预测结果头部 -->
+                    <div class="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div>
+                                <h3 class="text-xl font-bold">第2025123期推理结果</h3>
+                                <p class="mt-1 opacity-90" style="font-size: 18px;">更新时间: <span id="update-time">2025-05-15 10:30:00</span></p>
+                            </div>
+                            <div class="mt-4 md:mt-0 flex items-center">
+                                <span id="prediction-status" class="inline-flex items-center bg-white/20 px-3 py-1 rounded-full text-sm">
+                                    <i class="fa fa-check-circle mr-1"></i> 已验证
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 预测结果内容 -->
+                    <div id="prediction-content" class="p-6 md:p-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- 胆码预测 -->
+                            <div class="bg-primary-light rounded-xl p-6">
+                                <h4 class="text-lg font-bold text-dark mb-4 flex items-center">
+                                    <i class="fa fa-star text-primary mr-2"></i> 胆码预测
+                                </h4>
+                                <div id="D胆码-container" class="flex flex-wrap gap-3 mb-4">
+                                    <div class="number-ball number-ball-primary">3</div>
+                                    <div class="number-ball number-ball-primary">5</div>
+                                    <div class="number-ball number-ball-primary">7</div>
+                                </div>
+                                <p class="text-gray-600 text-sm">基于3胆中2胆模型，由1个热号+2个渐热号组成</p>
+                            </div>
+                            
+                            <!-- 五码预测 -->
+                            <div class="bg-secondary-light rounded-xl p-6">
+                                <h4 class="text-lg font-bold text-dark mb-4 flex items-center">
+                                    <i class="fa fa-th text-secondary mr-2"></i> 五码预测
+                                </h4>
+                                <div id="five-number-container" class="flex flex-wrap gap-3 mb-4">
+                                    <div class="number-ball number-ball-secondary">3</div>
+                                    <div class="number-ball number-ball-secondary">5</div>
+                                    <div class="number-ball number-ball-secondary">7</div>
+                                    <div class="number-ball number-ball-secondary">2</div>
+                                    <div class="number-ball number-ball-secondary">8</div>
+                                </div>
+                                <p class="text-gray-600 text-sm">包含3个胆码，由3个胆码+渐热号+冷号组成</p>
+                            </div>
+                            
+                            <!-- 七码预测 -->
+                            <div class="bg-yellow-50 rounded-xl p-6">
+                                <h4 class="text-lg font-bold text-dark mb-4 flex items-center">
+                                    <i class="fa fa-th-large text-accent mr-2"></i> 七码预测
+                                </h4>
+                                <div id="seven-number-container" class="flex flex-wrap gap-3 mb-4">
+                                    <div class="number-ball" style="background-color: #f59e0b;">3</div>
+                                    <div class="number-ball" style="background-color: #f59e0b;">5</div>
+                                    <div class="number-ball" style="background-color: #f59e0b;">7</div>
+                                    <div class="number-ball" style="background-color: #f59e0b;">2</div>
+                                    <div class="number-ball" style="background-color: #f59e0b;">8</div>
+                                    <div class="number-ball" style="background-color: #f59e0b;">1</div>
+                                    <div class="number-ball" style="background-color: #f59e0b;">9</div>
+                                </div>
+                                <p class="text-gray-600 text-sm">包含五码预测，增加两个近期可能出现的号码</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script>
+        // 移动端菜单切换
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 导航高亮功能
+        function highlightNavigation() {
+            // 获取当前页面路径
+            const currentPath = window.location.pathname;
+            const currentPage = currentPath.split('/').pop() || 'index.html';
+            
+            // 桌面端导航高亮
+            const desktopNavItems = document.querySelectorAll('.nav-item');
+            desktopNavItems.forEach(item => {
+                const itemPath = item.getAttribute('href');
+                const itemPage = itemPath.split('/').pop() || 'index.html';
+                
+                if (itemPage === currentPage) {
+                    item.classList.add('text-primary', 'font-medium', 'border-b-2', 'border-primary');
+                    item.classList.remove('text-gray-600');
+                } else {
+                    item.classList.remove('text-primary', 'font-medium', 'border-b-2', 'border-primary');
+                    item.classList.add('text-gray-600', 'hover:text-primary');
+                }
+            });
+            
+            // 移动端导航高亮
+            const mobileNavItems = document.querySelectorAll('#mobile-menu a');
+            mobileNavItems.forEach(item => {
+                const itemPath = item.getAttribute('href');
+                const itemPage = itemPath.split('/').pop() || 'index.html';
+                
+                if (itemPage === currentPage) {
+                    item.classList.add('text-primary', 'font-medium', 'border-l-4', 'border-primary');
+                    item.classList.remove('text-gray-600');
+                } else {
+                    item.classList.remove('text-primary', 'font-medium', 'border-l-4', 'border-primary');
+                    item.classList.add('text-gray-600', 'hover:text-primary');
+                }
+            });
+        }
+        
+        // 页面加载完成后执行导航高亮
+        document.addEventListener('DOMContentLoaded', highlightNavigation);
+    </script>
+</body>
+</html>
